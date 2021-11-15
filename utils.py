@@ -139,10 +139,14 @@ def refine_peaks(spectrum, peaks, properties):
     for i in range(npeaks):
         if i == 0:
             left_base = left_bases[i]
+        elif right_bases[i - 1] >= peaks[i]:
+            left_base = left_bases[i]
         else:
             left_base = np.max([left_bases[i], right_bases[i - 1]])
 
         if i == (npeaks - 1):
+            right_base = right_bases[i]
+        elif left_bases[i + 1] <= peaks[i]:
             right_base = right_bases[i]
         else:
             right_base = np.min([right_bases[i], left_bases[i + 1]])

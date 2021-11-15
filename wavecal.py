@@ -97,7 +97,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def validateLineEdit(self):
         # Validate peak parameters
-        rx_0_1 = QtCore.QRegExp('^(1|(0(\\.\\d{1,2})?))$')
+        rx_0_1 = QtCore.QRegExp('^(1|(0(\\.\\d{1,3})?))$')
         rx_0_100 = QtCore.QRegExp('^(100|((\\d{1}|[1-9]{1}[0-9]{1})(\\.\\d{1,2})?))$')
         rx_1_100 = QtCore.QRegExp('^(100|(([1-9]{1}[0-9]?)(\\.\\d{1,2})?))$')
         self.LineEdit_height.setValidator(QtGui.QRegExpValidator(rx_0_1))
@@ -305,7 +305,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                 extension = os.path.splitext(self.filename)[1]
                 if file_dialog.selectedNameFilter().startswith('Enhanced'):
                     self.fileformat = 'ecsv'
-                elif file_dialog.selectedNameFilter().startswith('ASCII'):
+                elif file_dialog.selectedNameFilter().startswith('FITS'):
                     self.fileformat = 'fits'
                 else:
                     self.fileformat = 'ascii'
