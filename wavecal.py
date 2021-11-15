@@ -583,16 +583,17 @@ if __name__ == '__main__':
 
     # Assignment
     args = parser.parse_args()
-    main_window.filename = os.path.abspath(args.name)
+    main_window.filename = args.name
     main_window.fileformat = args.format
     main_window.inverse = args.inverse
 
     # warnings.filterwarnings('error')
 
     # Load spectrum if ``name`` and ``format`` is provided
-    if (main_window.filename is not None) & \
-       (main_window.fileformat is not None):
-        main_window.load(external=True)
+    if main_window.filename is not None:
+        main_window.filename = os.path.abspath(main_window.filename)
+        if main_window.fileformat is not None:
+            main_window.load(external=True)
 
     sys.exit(app.exec_())
     
