@@ -33,7 +33,7 @@ def loadSpectrum(filename, fileformat, inverse):
 
     # Load
     if fileformat == 'ascii':
-        tbl = ascii.read(filename)
+        tbl = ascii.read(filename, guess=True, data_start=0)
     else:
         if fileformat == 'ecsv': fileformat = 'ascii.' + fileformat
         tbl = Table.read(filename, format=fileformat)
