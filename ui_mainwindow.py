@@ -656,7 +656,7 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "Wavelength Calibration"))
+        MainWindow.setWindowTitle(_translate("MainWindow", "Wavelength Calibrator"))
         self.GroupBox_peak.setTitle(_translate("MainWindow", "Peak Detection"))
         self.Label_peak.setText(_translate("MainWindow", "<html><head/><body><p><span style=\" font-size:10pt;\">Peak parameters</span></p></body></html>"))
         self.Label_height.setText(_translate("MainWindow", "<html><head/><body><p><span style=\" font-size:10pt;\">height</span></p></body></html>"))

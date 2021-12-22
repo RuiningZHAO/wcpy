@@ -6,7 +6,7 @@ from scipy.signal import find_peaks
 from scipy.optimize import curve_fit
 from scipy.interpolate import LSQUnivariateSpline
 # AstroPy
-from astropy.io import ascii
+from astropy.io import ascii, fits
 from astropy.time import Time
 from astropy.table import Table
 
@@ -34,9 +34,10 @@ def loadSpectrum(filename, fileformat, inverse):
     # Load
     if fileformat == 'ascii':
         tbl = ascii.read(filename, guess=True, data_start=0)
-    else:
-        if fileformat == 'ecsv': fileformat = 'ascii.' + fileformat
-        tbl = Table.read(filename, format=fileformat)
+    elif fileformat == 'ecsv':
+        tbl = Table.read(filename, format='ascii.' + fileformat)
+    elif fileformat == 'fits':
+        tbl = Table.read(filename, format=fileformat, hdu='SPEC')
 
     # Index
     index = np.arange(len(tbl))
@@ -57,21 +58,39 @@ def loadSpectrum(filename, fileformat, inverse):
 
     return index, count
 
-def saveSpectrum(data, header, filename, fileformat):
+def saveSpectrum(spectrum, peak_prop, header, filename, saveECSV):
     """A function to load uncalibrated spectrum.
 
     Parameters
     ----------
-    data : np.ndarray
+    spectrum : `astropy.table.table.Table`
+    peak_prop : `astropy.table.table.Table`
     header : dict
     filename : str
-    fileformat : str
+    saveECSV : bool
     """
-    header['ORIGIN'] = ('Wavelength Calibrator (version 0.0.2)', 'File originator')
+
+    header['ORIGIN'] = ('Wavelength Calibrator (version 0.0.2)', 'File generator')
     header['DATE'] = (f'{Time.now().to_value("iso", subfmt="date_hm")}', 'Date file was generated')
-    Table(data=data, 
-          names=('wavelength', 'normalized count'),
-          meta=header).write(filename, format=fileformat, overwrite=True)
+
+    
+    spectrum.meta['EXTNAME'] = ('SPEC', 'Name of the extension')
+    peak_prop.meta['EXTNAME'] = ('PEAK', 'Name of the extension')
+    for key, val in header.items():
+        spectrum.meta[key] = val
+        peak_prop.meta[key] = val
+
+    hdu_list = fits.HDUList([
+        fits.PrimaryHDU(),
+        fits.table_to_hdu(spectrum),
+        fits.table_to_hdu(peak_prop), 
+    ])
+    hdu_list.writeto(filename, overwrite=True)
+
+    if saveECSV:
+        spectrum.write(os.path.splitext(filename)[0] + '_spec.ecsv', format='ascii.ecsv', overwrite=True)
+        peak_prop.write(os.path.splitext(filename)[0] + '_peak.ecsv', format='ascii.ecsv', overwrite=True)
+    
 
 def Gaussian(x, a, x0, sigma):
     """1D Gaussian
@@ -109,7 +128,7 @@ def refine_peaks(spectrum, peaks, properties):
     ----------
     spectrum: array_like
         Input spectrum (intensities)
-    peaks: array_list
+    peaks: array_like
         Peak locations in pixels
     properties: dict
         Peak properties dict returned by `scipy.signal.find_peaks`. Should
@@ -122,9 +141,9 @@ def refine_peaks(spectrum, peaks, properties):
     """
 
     refined_peaks = list()
+    mask = list()
 
     spectrum = np.array(spectrum)
-
     length = spectrum.shape[0]
     index = np.arange(length)
 
@@ -137,20 +156,21 @@ def refine_peaks(spectrum, peaks, properties):
     widths = right_bases - left_bases
 
     for i in range(npeaks):
+        # Refine left base
         if i == 0:
             left_base = left_bases[i]
         elif right_bases[i - 1] >= peaks[i]:
             left_base = left_bases[i]
         else:
             left_base = np.max([left_bases[i], right_bases[i - 1]])
-
+        # Refine right base
         if i == (npeaks - 1):
             right_base = right_bases[i]
         elif left_bases[i + 1] <= peaks[i]:
             right_base = right_bases[i]
         else:
             right_base = np.min([right_bases[i], left_bases[i + 1]])
-
+        
         if (right_base + 1 - left_base) < 5:
             left_base = peaks[i] - 2
             right_base = peaks[i] + 2
@@ -172,19 +192,26 @@ def refine_peaks(spectrum, peaks, properties):
                (0 < centre) & \
                (centre < (length - 1)):
                 refined_peaks.append(centre)
+                mask.append(True)
             else:
+                mask.append(False)
                 continue
 
         except RuntimeError:
+            mask.append(False)
             continue
     refined_peaks = np.array(refined_peaks)
 
-    # Remove peaks that are within rounding errors from each other from the
-    # curve_fit
+    # Remove peaks that are within rounding errors from each other from the curve_fit
     distance_mask = np.isclose(refined_peaks[:-1], refined_peaks[1:])
     distance_mask = np.hstack([False, distance_mask])
 
-    return refined_peaks[~distance_mask]
+    refined_peaks = refined_peaks[~distance_mask]
+    refined_properties = dict()
+    for key, val in properties.items():
+        refined_properties[key] = val[mask][~distance_mask]
+
+    return refined_peaks, refined_properties
 
 def findPeaks(x, **kwargs):
     """
@@ -198,7 +225,7 @@ def findPeaks(x, **kwargs):
                             peaks=peaks, 
                             properties=properties)
     else:
-        return peaks
+        return peaks, properties
 
 def fitCubicSpline(x, y, mask, npieces):
     """

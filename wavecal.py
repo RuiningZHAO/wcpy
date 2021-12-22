@@ -4,6 +4,8 @@ import os, sys, argparse, warnings
 from PyQt5 import QtCore, QtGui, QtWidgets
 # NumPy
 import numpy as np
+# AstroPy
+from astropy.table import Table
 # Plot
 import matplotlib.pyplot as plt
 import matplotlib.transforms as transforms
@@ -211,7 +213,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                 return True
             elif event.matches(QtGui.QKeySequence.Cut):
                 self.copySelection()
-                self.removeSelection()
+                self.deleteSelection()
                 return True
         return super(MainWindow, self).eventFilter(source, event)
 
@@ -335,37 +337,32 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         """
         """
 
-        file_dialog = QtWidgets.QFileDialog()
+        file_dialog = CheckBoxFileDialog(check_box_text='Enhanced CSV Files (*.ecsv)')
         file_dialog.setAcceptMode(QtWidgets.QFileDialog.AcceptSave)
-        file_dialog.setOption(QtWidgets.QFileDialog.DontUseNativeDialog)
-        file_dialog.setNameFilters(['Enhanced CSV Files (*.ecsv)', 
-                                    'FITS (*.fits *.fit *.FITS *.FIT)'])
+        file_dialog.setNameFilters(['FITS (*.fits *.fit *.FITS *.FIT)'])
         file_dialog.selectFile(os.path.splitext(self.filename)[0])
-        file_dialog.selectNameFilter('Enhanced CSV Files (*.ecsv)')
         if file_dialog.exec_() == QtWidgets.QDialog.Accepted:
             # ``filename``
             filename = file_dialog.selectedUrls()[0].toLocalFile()
-            # ``fileformat``
             extension = os.path.splitext(filename)[1]
-            if file_dialog.selectedNameFilter().startswith('FITS'):
-                if extension not in ['.fits', '.fit', '.FITS', '.FIT']:
-                    filename += '.fits'
-                fileformat = 'fits'
-            else:
-                if extension != '.ecsv':
-                    filename += '.ecsv'
-                fileformat = 'ascii.ecsv'
-            saveSpectrum(data=np.vstack([self.wave_index, self.count]).T, 
+            if extension not in ['.fits', '.fit', '.FITS', '.FIT']:
+                filename += '.fits'
+            # also save as Enhanced CSV Files (*.ecsv) or not
+            saveECSV = file_dialog.check_box.checkState() == QtCore.Qt.Checked
+
+            saveSpectrum(spectrum=self.spectrum, 
+                         peak_prop=self.peak_prop, 
                          header=self.header, 
                          filename=filename, 
-                         fileformat=fileformat)
+                         saveECSV=saveECSV)
+            
             self.statusBar.showMessage(f'Saved to {filename} successfully.', 2000)
 
     def about(self):
-        text = 'wavecal (to be renamed) version 0.0.1\n' +\
+        text = 'Wavelength Calibrator (ver 0.0.2)\n' +\
                'Developed by Ruining ZHAO\n' +\
-               '11/15/2021\n' +\
-               '1) Bugs exists.\n' +\
+               '12/22/2021\n' +\
+               '1) Bugs to be fixed.\n' +\
                '2) Exceptions to be caught.'
         about_message_box = QtWidgets.QMessageBox()
         about_message_box.setIcon(QtWidgets.QMessageBox.Information)
@@ -377,6 +374,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     def find(self):
         """
         self.peaks
+        self.properties
         """
     
         nrow_old = self.TableWidget_line.rowCount()
@@ -399,15 +397,15 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         plateau = float(self.LineEdit_plateau.text())
 
         # Find peaks
-        self.peaks = findPeaks(x=self.count, 
-                               height=height, 
-                               threshold=threshold, 
-                               distance=distance, 
-                               prominence=prominence, 
-                               width=width, 
-                               wlen=wlen, 
-                               rel_height=rel, 
-                               plateau_size=plateau)
+        self.peaks, self.properties = findPeaks(x=self.count, 
+                                                height=height, 
+                                                threshold=threshold, 
+                                                distance=distance, 
+                                                prominence=prominence, 
+                                                width=width, 
+                                                wlen=wlen, 
+                                                rel_height=rel, 
+                                                plateau_size=plateau)
 
         self.TableWidget_line.setRowCount(len(self.peaks))
         peak_lib_keys = self.peak_lib.keys()
@@ -482,6 +480,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.wave_index
         self.residual
         self.rms
+        self.spectrum
+        self.peak_prop
         """
 
         # Get fit parameters
@@ -491,8 +491,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         
         # Get labelled lines
         nrow = self.TableWidget_line.rowCount()
-        self.wave = np.zeros(nrow)
-        self.mask = np.zeros(nrow, dtype=bool)
+        self.wave_input = np.zeros(nrow)
+        self.mask_input = np.zeros(nrow, dtype=bool)
         for i in range(nrow):
             try:
                 w = float(self.TableWidget_line.item(i, 0).text())
@@ -500,26 +500,37 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             except:
                 w = np.nan
                 m = True
-            self.wave[i] = w
-            self.mask[i] = m
+            self.wave_input[i] = w
+            self.mask_input[i] = m
 
         # Fit with cubic spline function
         spl = fitCubicSpline(x=self.peaks, 
-                             y=self.wave, 
-                             mask=self.mask, 
+                             y=self.wave_input, 
+                             mask=self.mask_input, 
                              npieces=self.npieces)
         self.wave_peaks = spl(self.peaks)
         self.wave_index = spl(self.index)
-        self.residual = self.wave[~self.mask] - self.wave_peaks[~self.mask]
-        self.rms = np.sqrt((self.residual**2).sum() / (~self.mask).sum())
-        self.header = {
-            'NPEAKU': ((~self.mask).sum(), 'Number of peaks used'),
-            'NPEAKD': (self.wave.shape[0], 'Number of peaks detected'),
-            'NPIECES': (self.npieces, 'Number of spline3 pieces (``order`` in iraf)'),
-            'RMS': (round(self.rms, 3), 'Root mean squared of fitting'),
-        }
+        self.residual = self.wave_input[~self.mask_input] - self.wave_peaks[~self.mask_input]
+        self.rms = np.sqrt((self.residual**2).sum() / (~self.mask_input).sum())
+
         # Plot
         self.plotFitting()
+        
+        # Compile
+        self.header = {
+            'NPEAKU': ((~self.mask_input).sum(), 'Number of peaks used'),
+            'NPEAKD': (self.wave_input.shape[0], 'Number of peaks detected'),
+            'NPIECES': (self.npieces, 'Number of spline3 pieces'),
+            'RMS': (round(self.rms, 3), 'Root mean squared of fitting'),
+        }
+        self.spectrum = Table(data=np.vstack([self.wave_index, self.count]).T, 
+                              names=('wavelength', 'normalized count'))
+        self.peak_prop = Table(data=np.vstack([self.peaks[~self.mask_input],
+                                               self.properties['peak_heights'][~self.mask_input], 
+                                               self.properties['left_bases'][~self.mask_input], 
+                                               self.properties['right_bases'][~self.mask_input], 
+                                               self.wave_input[~self.mask_input]]).T, 
+                               names=('peaks', 'peak_heights', 'left_bases', 'right_bases', 'wavelength'))
 
         # Enable Button `Save`
         self.save_action.setEnabled(True)
@@ -529,15 +540,15 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.Figure_fit.clear()
         self.ax_fit = self.Figure_fit.add_subplot(111)
         if not self.show_residual:
-            self.ax_fit.plot(self.wave[self.mask], self.peaks[self.mask], 'x', c='grey', ms=8)
-            self.ax_fit.plot(self.wave[~self.mask], self.peaks[~self.mask], 'x', c='red', ms=8)
+            self.ax_fit.plot(self.wave_input[self.mask_input], self.peaks[self.mask_input], 'x', c='grey', ms=8)
+            self.ax_fit.plot(self.wave_input[~self.mask_input], self.peaks[~self.mask_input], 'x', c='red', ms=8)
             self.ax_fit.plot(self.wave_index, self.index, 'k-', lw=0.8)
             self.ax_fit.set_ylabel('Pixel Index', fontsize=12)
         else:
-            self.ax_fit.plot(self.wave_peaks[~self.mask], self.residual, 'x', c='red', ms=8)
+            self.ax_fit.plot(self.wave_peaks[~self.mask_input], self.residual, 'x', c='red', ms=8)
             self.ax_fit.axhline(y=0, ls='--', color='k', lw=0.8)
             for i, peak in enumerate(self.peaks):
-                if self.mask[i]:
+                if self.mask_input[i]:
                     self.ax_fit.annotate(f'{i + 1:d}', (self.wave_peaks[i], 0), xycoords='data', ha='center', va='center', fontsize=12, color='grey')
                 else:
                     self.ax_fit.annotate(f'{i + 1:d}', (self.wave_peaks[i], 0), xycoords='data', ha='center', va='center', fontsize=12, color='r')
@@ -546,7 +557,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.ax_fit.tick_params(which='minor', direction='in', top=True, right=True, length=3, width=1.5, labelsize=12)
         self.ax_fit.set_xlim(self.wave_index.min(), self.wave_index.max())
         self.ax_fit.set_xlabel('Wavelength', fontsize=12)
-        self.ax_fit.annotate('$N=' + f'{(~self.mask).sum()}/{self.wave.shape[0]}$, ' + '$\\rm{RMS}=' + f'{self.rms:.3f}$',
+        self.ax_fit.annotate('$N=' + f'{(~self.mask_input).sum()}/{self.wave_input.shape[0]}$, ' + '$\\rm{RMS}=' + f'{self.rms:.3f}$',
                              xy=(0.98, 0.1), 
                              xycoords='axes fraction',
                              ha='right',
