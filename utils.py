@@ -3,12 +3,16 @@ import os
 import numpy as np
 # SciPy
 from scipy.signal import find_peaks
-from scipy.optimize import curve_fit
 from scipy.interpolate import LSQUnivariateSpline
+from scipy.optimize import curve_fit, OptimizeWarning
 # AstroPy
 from astropy.io import ascii, fits
 from astropy.time import Time
 from astropy.table import Table
+
+# Warning setting
+import warnings
+warnings.simplefilter('error', OptimizeWarning)
 
 def loadSpectrum(filename, fileformat, inverse):
     """A function to load uncalibrated spectrum.
@@ -144,7 +148,7 @@ def refinePeaks(spectrum, peaks, properties):
         raise ValueError(f'Illegal type {type(spectrum)} for refining peak locations.')
 
     try:
-        peaks = np.array(peaks)
+        peaks = np.array(peaks, dtype=float)
     except:
         raise ValueError(f'Illegal type {type(peaks)} for refining peak locations.')
     
@@ -157,9 +161,9 @@ def refinePeaks(spectrum, peaks, properties):
 
     n_peaks = peaks.shape[0]
 
-    heights = properties['peak_heights']
-    left_bases = properties['left_bases']
-    right_bases = properties['right_bases']
+    heights = properties['peak_heights'].astype(float)
+    left_bases = properties['left_bases'].astype(float)
+    right_bases = properties['right_bases'].astype(float)
     widths = right_bases - left_bases
 
     refined_index = list()
@@ -181,14 +185,15 @@ def refinePeaks(spectrum, peaks, properties):
             right_base = np.min([right_bases[i], left_bases[i + 1]])
         # too few points
         if (right_base + 1 - left_base) < 5:
-            left_base = int(peaks[i]) - 2
-            right_base = int(peaks[i]) + 2
+            left_base = peaks[i] - 2
+            right_base = peaks[i] + 2
             if left_base < 0:
                 right_base -= left_base
                 left_base = 0
             if right_base > index[-1]:
                 left_base -= (right_base - index[-1])
                 right_base = index[-1]
+        left_base, right_base = int(left_base), int(right_base)
         
         # Fit
         x = index[left_base:(right_base + 1)]
@@ -204,7 +209,7 @@ def refinePeaks(spectrum, peaks, properties):
                 refined_index.append(i)
                 refined_peaks.append(centre)
 
-        except RuntimeError:
+        except (RuntimeError, OptimizeWarning):
             continue
 
     refined_index = np.array(refined_index)
