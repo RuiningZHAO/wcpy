@@ -145,12 +145,12 @@ def refinePeaks(spectrum, peaks, properties):
     try:
         spectrum = np.array(spectrum)
     except:
-        raise ValueError(f'Illegal type {type(spectrum)} for refining peak locations.')
+        raise ValueError(f'Invalid type {type(spectrum)} for refining peak locations.')
 
     try:
         peaks = np.array(peaks, dtype=float)
     except:
-        raise ValueError(f'Illegal type {type(peaks)} for refining peak locations.')
+        raise ValueError(f'Invalid type {type(peaks)} for refining peak locations.')
     
     if ('peak_heights' not in properties) | \
        ('left_bases' not in properties) | \
