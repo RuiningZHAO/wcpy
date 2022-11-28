@@ -1,27 +1,31 @@
 # -*- coding: utf-8 -*-
 import os, sys, argparse, warnings
+
 # PyQt5
 from PyQt5 import QtCore, QtGui, QtWidgets
 # NumPy
 import numpy as np
 # AstroPy
+import astropy.units as u
 from astropy.table import Table
-# Plot
+# Matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.transforms as transforms
-# Set plot parameters
-plt.rcParams['axes.linewidth'] = 1
-plt.rcParams['mathtext.fontset'] = 'stix'
-plt.rcParams['font.family'] = 'STIXGeneral'
 
+# UI
 from ui_mainwindow import Ui_MainWindow
-
 # fonts
 from fonts import table_font
 # widgets
 from widgets import CheckBoxFileDialog
 # utils
 from utils import loadSpectrum, saveSpectrum, findPeaks, fitCubicSpline
+
+# Set plot parameters
+plt.rcParams['axes.linewidth'] = 1
+plt.rcParams['mathtext.fontset'] = 'stix'
+plt.rcParams['font.family'] = 'STIXGeneral'
+
 
 class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     def __init__(self):
@@ -282,7 +286,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         isAccepted = False
 
         if not external:
-            file_dialog = CheckBoxFileDialog(check_box_text='inverse')
+            file_dialog = CheckBoxFileDialog(check_box_text='reverse')
             file_dialog.setNameFilters(['ASCII Files (*.*)', 
                                         'Enhanced CSV Files (*.ecsv)', 
                                         'FITS (*.fits *.fit *.FITS *.FIT)'])
@@ -294,8 +298,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                 file_dialog.selectNameFilter('Enhanced CSV Files (*.ecsv)')
             elif self.fileformat == 'fits':
                 file_dialog.selectNameFilter('FITS (*.fits *.fit *.FITS *.FIT)')
-            if self.inverse is not None:
-                file_dialog.check_box.setChecked(self.inverse)
+            if self.reverse is not None:
+                file_dialog.check_box.setChecked(self.reverse)
 
             if file_dialog.exec_() == QtWidgets.QDialog.Accepted:
                 
@@ -311,12 +315,12 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                     self.fileformat = 'fits'
                 else:
                     self.fileformat = 'ascii'
-                # ``inverse``
-                self.inverse = file_dialog.check_box.checkState() == QtCore.Qt.Checked
+                # ``reverse``
+                self.reverse = file_dialog.check_box.checkState() == QtCore.Qt.Checked
 
         if external | isAccepted:
             # try:
-            self.index, self.count = loadSpectrum(self.filename, self.fileformat, self.inverse)
+            self.index, self.count = loadSpectrum(self.filename, self.fileformat, self.reverse)
             # except:
             self.peak_lib = dict()
 
@@ -518,19 +522,19 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         
         # Compile
         self.header = {
-            'NPEAKU': ((~self.mask_input).sum(), 'Number of peaks used'),
-            'NPEAKD': (self.wave_input.shape[0], 'Number of peaks detected'),
-            'NPIECES': (self.npieces, 'Number of spline3 pieces'),
-            'RMS': (round(self.rms, 3), 'Root mean squared of fitting'),
+            'PEAKUSED': ((~self.mask_input).sum(), 'number of peaks used'),
+            'PEAKDETE': (self.wave_input.shape[0], 'number of peaks detected'),
+            'PIECE': (self.npieces, 'number of cubic spline pieces'),
+            'RMS': (round(self.rms, 3), 'root mean squared of fitting'),
         }
-        self.spectrum = Table(data=np.vstack([self.wave_index, self.count]).T, 
-                              names=('wavelength', 'normalized count'))
-        self.peak_prop = Table(data=np.vstack([self.peaks[~self.mask_input],
-                                               self.properties['peak_heights'][~self.mask_input], 
-                                               self.properties['left_bases'][~self.mask_input], 
-                                               self.properties['right_bases'][~self.mask_input], 
-                                               self.wave_input[~self.mask_input]]).T, 
-                               names=('peaks', 'peak_heights', 'left_bases', 'right_bases', 'wavelength'))
+        self.spectrum = Table(data=[self.wave_index * u.AA, u.Quantity(self.count)], 
+                              names=('spectral_axis', 'flux'))
+        self.peak_prop = Table(data=[u.Quantity(self.peaks[~self.mask_input]),
+                                     self.properties['peak_heights'][~self.mask_input] * u.pixel, 
+                                     self.properties['left_bases'][~self.mask_input] * u.pixel, 
+                                     self.properties['right_bases'][~self.mask_input] * u.pixel, 
+                                     self.wave_input[~self.mask_input] * u.AA], 
+                               names=('peaks', 'peak_heights', 'left_bases', 'right_bases', 'spectral_axis'))
 
         # Enable Button `Save`
         self.save_action.setEnabled(True)
@@ -579,10 +583,10 @@ if __name__ == '__main__':
     parser.add_argument('-f', '--format', 
                         default=None, 
                         help='Format of the input file (`ascii`, `ecsv`, or `fits`).')
-    parser.add_argument('-i', '--inverse', 
+    parser.add_argument('-r', '--reverse', 
                         action='store_true', 
                         default=False, 
-                        help='Inverse or not')
+                        help='Reverse or not')
 
     # UI
     app = QtWidgets.QApplication([])
@@ -596,7 +600,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
     main_window.filename = args.name
     main_window.fileformat = args.format
-    main_window.inverse = args.inverse
+    main_window.reverse = args.reverse
 
     # warnings.filterwarnings('error')
 

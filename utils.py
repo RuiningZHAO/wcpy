@@ -14,14 +14,14 @@ from astropy.table import Table
 import warnings
 warnings.simplefilter('error', OptimizeWarning)
 
-def loadSpectrum(filename, fileformat, inverse):
+def loadSpectrum(filename, fileformat, reverse):
     """A function to load uncalibrated spectrum.
 
     Parameters
     ----------
     filename : str
     fileformat : str
-    inverse : bool
+    reverse : bool
 
     Returns
     -------
@@ -57,7 +57,7 @@ def loadSpectrum(filename, fileformat, inverse):
     count = count / count.max()
 
     # Inverse
-    if inverse:
+    if reverse:
         count = count[::-1]
 
     return index, count
@@ -74,12 +74,12 @@ def saveSpectrum(spectrum, peak_prop, header, filename, saveECSV):
     saveECSV : bool
     """
 
-    header['ORIGIN'] = ('Wavelength Calibrator (version 0.0.2)', 'File generator')
-    header['DATE'] = (f'{Time.now().to_value("iso", subfmt="date_hm")}', 'Date file was generated')
+    header['ORIGIN'] = ('Wavelength Calibrator (version 0.0.2)', 'file generator')
+    header['DATE'] = (f'{Time.now().to_value("iso", subfmt="date_hm")}', 'date file was generated')
 
     
-    spectrum.meta['EXTNAME'] = ('SPEC', 'Name of the extension')
-    peak_prop.meta['EXTNAME'] = ('PEAK', 'Name of the extension')
+    spectrum.meta['EXTNAME'] = ('spec', 'name of the extension')
+    peak_prop.meta['EXTNAME'] = ('peak', 'name of the extension')
     for key, val in header.items():
         spectrum.meta[key] = val
         peak_prop.meta[key] = val
