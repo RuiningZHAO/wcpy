@@ -529,12 +529,12 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         }
         self.spectrum = Table(data=[self.wave_index * u.AA, u.Quantity(self.count)], 
                               names=('spectral_axis', 'flux'))
-        self.peak_prop = Table(data=[u.Quantity(self.peaks[~self.mask_input]),
-                                     self.properties['peak_heights'][~self.mask_input] * u.pixel, 
+        self.peak_prop = Table(data=[self.peaks[~self.mask_input] * u.pixel,
+                                     u.Quantity(self.properties['peak_heights'][~self.mask_input]), 
                                      self.properties['left_bases'][~self.mask_input] * u.pixel, 
                                      self.properties['right_bases'][~self.mask_input] * u.pixel, 
                                      self.wave_input[~self.mask_input] * u.AA], 
-                               names=('peaks', 'peak_heights', 'left_bases', 'right_bases', 'spectral_axis'))
+                               names=('peaks', 'heights', 'left_bases', 'right_bases', 'spectral_axis'))
 
         # Enable Button `Save`
         self.save_action.setEnabled(True)
