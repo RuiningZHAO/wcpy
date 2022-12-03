@@ -1,4 +1,5 @@
-import os
+import os, warnings
+
 # NumPy
 import numpy as np
 # SciPy
@@ -9,24 +10,34 @@ from scipy.optimize import curve_fit, OptimizeWarning
 from astropy.io import ascii, fits
 from astropy.time import Time
 from astropy.table import Table
+# drpsy
+from drpsy.modeling.function import Gaussian1D
 
-# Warning setting
-import warnings
+from __init__ import __version__ as version
+
 warnings.simplefilter('error', OptimizeWarning)
 
-def loadSpectrum(filename, fileformat, reverse):
-    """A function to load uncalibrated spectrum.
+def loadSpectrum(file_name, file_format, reverse):
+    """Load uncalibrated spectrum.
 
     Parameters
     ----------
-    filename : str
-    fileformat : str
+    file_name : str
+        File name.
+
+    file_format : str
+        File format.
+
     reverse : bool
+        Reverse ot not.
 
     Returns
     -------
-    index : np.ndarray
-    count : np.ndarray
+    index : `~numpy.ndarray`
+        Pixel index.
+
+    count : `~numpy.ndarray`
+        Normalized count.
 
     Raise 
     -----
@@ -36,12 +47,14 @@ def loadSpectrum(filename, fileformat, reverse):
     """
 
     # Load
-    if fileformat == 'ascii':
-        tbl = ascii.read(filename, guess=True, data_start=0)
-    elif fileformat == 'ecsv':
-        tbl = Table.read(filename, format='ascii.' + fileformat)
-    elif fileformat == 'fits':
-        tbl = Table.read(filename, format=fileformat, hdu='SPEC')
+    if file_format == 'ascii':
+        tbl = ascii.read(file_name, guess=True, data_start=0)
+
+    elif file_format == 'ecsv':
+        tbl = Table.read(file_name, format='ascii.' + file_format)
+
+    elif file_format == 'fits':
+        tbl = Table.read(file_name, format=file_format, hdu='spec')
 
     # Index
     index = np.arange(len(tbl))
@@ -49,33 +62,52 @@ def loadSpectrum(filename, fileformat, reverse):
     # Count
     if len(tbl.colnames) > 1:
         count = tbl[tbl.colnames[1]].data
+
     else:
         count = tbl[tbl.colnames[0]].data
-    mask = np.isnan(count) | ~np.isfinite(count)
+
+    # Mask bad pixels
+    mask = np.isfinite(count)
+
     if mask.any():
-        count = np.interp(index, index[~mask], count[~mask])
+        count = np.interp(index, index[mask], count[mask])
+
+    # Normalize
     count = count / count.max()
 
-    # Inverse
+    # Reverse
     if reverse:
         count = count[::-1]
 
     return index, count
 
-def saveSpectrum(spectrum, peak_prop, header, filename, saveECSV):
-    """A function to load uncalibrated spectrum.
+
+def saveSpectrum(file_name, spectrum, peak_prop, header, saveECSV):
+    """Save calibrated spectrum.
 
     Parameters
     ----------
-    spectrum : `astropy.table.table.Table`
-    peak_prop : `astropy.table.table.Table`
+    file_name : str
+        File name.
+
+    spectrum : `~astropy.table.table.Table`
+        Calibrated spectrum to be saved.
+
+    peak_prop : `~astropy.table.table.Table`
+        Properties of the peaks used to derive dispersion solution.
+
     header : dict
-    filename : str
+        Header of the file to be saved.
+
     saveECSV : bool
+        If `True`, two .ecsv files containing the calibrated spectrum and the peak 
+        properties are saved along with the .fits file.
     """
 
-    header['ORIGIN'] = ('Wavelength Calibrator (version 0.0.2)', 'file generator')
-    header['DATE'] = (f'{Time.now().to_value("iso", subfmt="date_hm")}', 'date file was generated')
+    header['ORIGIN'] = (
+        f'Wavelength Calibrator (version {version})', 'file generator')
+    header['DATE'] = (
+        f'{Time.now().to_value("iso", subfmt="date_hm")}', 'date file was generated')
 
     
     spectrum.meta['EXTNAME'] = ('spec', 'name of the extension')
@@ -89,33 +121,16 @@ def saveSpectrum(spectrum, peak_prop, header, filename, saveECSV):
         fits.table_to_hdu(spectrum),
         fits.table_to_hdu(peak_prop), 
     ])
-    hdu_list.writeto(filename, overwrite=True)
+    hdu_list.writeto(file_name, overwrite=True)
 
     if saveECSV:
-        spectrum.write(os.path.splitext(filename)[0] + '_spec.ecsv', format='ascii.ecsv', overwrite=True)
-        peak_prop.write(os.path.splitext(filename)[0] + '_peak.ecsv', format='ascii.ecsv', overwrite=True)
+        spectrum.write(
+            os.path.splitext(file_name)[0] + '_spec.ecsv', format='ascii.ecsv', 
+            overwrite=True)
+        peak_prop.write(
+            os.path.splitext(file_name)[0] + '_peak.ecsv', format='ascii.ecsv', 
+            overwrite=True)
 
-def Gaussian(x, a, x0, sigma):
-    """1D Gaussian function.
-
-    Parameters
-    ----------
-    x: float or `numpy.ndarray`
-        Value or values to evaluate the Gaussian at.
-    a: float
-        Magnitude.
-    x0: float
-        Gaussian centre.
-    sigma: float
-        Standard deviation.
-
-    Returns
-    -------
-    out: float or `numpy.ndarray`
-        The Gaussian function evaluated at provided x.
-    """
-
-    return a * np.exp(-(x - x0)**2 / (2 * sigma**2))
 
 def refinePeaks(spectrum, peaks, properties):
     """Refine peak locations in a spectrum from a set of initial estimates.
@@ -200,7 +215,7 @@ def refinePeaks(spectrum, peaks, properties):
         y = spectrum[left_base:(right_base + 1)]
 
         try:
-            popt, _ = curve_fit(Gaussian, x, y, p0=[heights[i], peaks[i], widths[i]])
+            popt, _ = curve_fit(Gaussian1D, x, y, p0=[heights[i], peaks[i], widths[i]])
             height, centre, _ = popt
 
             if (height > 0) & \
@@ -227,37 +242,32 @@ def refinePeaks(spectrum, peaks, properties):
 
     return refined_peaks, refined_properties, refined_index
 
+
 def findPeaks(x, **kwargs):
-    """
-    A function to find and refine peaks
-    """
+    """Find and refine peaks"""
 
     peaks, properties = find_peaks(x=x, **kwargs)
     if peaks.shape[0] > 0:
         # Refine peaks
-        refined_peaks, refined_properties, _ = refinePeaks(spectrum=x, 
-                                                           peaks=peaks, 
-                                                           properties=properties)
+        refined_peaks, refined_properties, _ = refinePeaks(
+            spectrum=x, peaks=peaks, properties=properties)
         return refined_peaks, refined_properties
+
     else:
         return peaks, properties
 
+
 def fitCubicSpline(x, y, mask, npieces):
-    """
-    A function to fit with cubic spline function
-    """
+    """Fit with cubic spline function"""
 
     order = 3
     if ((~mask).sum() - 2) >= npieces:
-        knots = x[~mask][0] + np.arange(1, npieces) * (x[~mask][-1] - x[~mask][0]) / npieces
-        spl = LSQUnivariateSpline(x=x[~mask], 
-                                  y=y[~mask], 
-                                  t=knots, 
-                                  w=None, 
-                                  bbox=[None, None], 
-                                  k=order, 
-                                  ext='extrapolate', 
-                                  check_finite=False)
+        knots = (
+            x[~mask][0] + np.arange(1, npieces) * (x[~mask][-1] - x[~mask][0]) / npieces
+        )
+        spl = LSQUnivariateSpline(
+            x=x[~mask], y=y[~mask], t=knots, w=None, bbox=[None, None], k=order, 
+            ext='extrapolate', check_finite=False)
         return spl
     else:
         raise
