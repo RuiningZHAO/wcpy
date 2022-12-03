@@ -28,7 +28,10 @@ plt.rcParams['font.family'] = 'STIXGeneral'
 
 
 class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
+
+
     def __init__(self):
+
         super().__init__()
 
         # Set up the user interface from Designer.
@@ -62,8 +65,10 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.save_action.setEnabled(False)
         # Disable group box `peak`
         self.setEnabled(group_box='peak', enable=False)
-        # Disable group box `fit`
-        self.setEnabled(group_box='fit', enable=False)
+        # Disable group box `line`
+        self.setEnabled(group_box='line', enable=False)
+        # Disable group box `disp`
+        self.setEnabled(group_box='disp', enable=False)
         
         # Tab order
         QtCore.QMetaObject.connectSlotsByName(self)
@@ -83,6 +88,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         # Flag
         self.isNewOpen = True
 
+
     def disableButtonFind(self, LineEdit):
         """
         """
@@ -91,7 +97,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             self.Button_find.setEnabled(False)
         else:
             self.Button_find.setEnabled(True)
-    
+
+
     def disableButtonFit(self, LineEdit):
         """
         """
@@ -100,6 +107,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             self.Button_fit.setEnabled(False)
         else:
             self.Button_fit.setEnabled(True)
+
 
     def validateLineEdit(self):
         # Validate peak parameters
@@ -138,6 +146,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         # self.LineEdit_sig_upper.textChanged.connect(lambda: self.disableButtonFit(self.LineEdit_sig_upper))
         # self.LineEdit_maxiter.textChanged.connect(lambda: self.disableButtonFit(self.LineEdit_maxiter))
 
+
     def initializeLineEdit(self):
         # Default peak parameters
         self.LineEdit_height.setText('0')
@@ -149,11 +158,15 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.LineEdit_rel.setText('0.5')
         self.LineEdit_plateau.setText('0')
 
+        # Default unit
+        self.LineEdit_unit.setText('Angstrom')
+
         # Default fit parameters
         self.LineEdit_npieces.setText('1')
         # self.LineEdit_sig_lower.setText('3')
         # self.LineEdit_sig_upper.setText('3')
         # self.LineEdit_maxiter.setText('1')
+
 
     def setEnabled(self, group_box, enable):
         if group_box == 'peak':
@@ -168,8 +181,14 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             self.LineEdit_plateau.setEnabled(enable)
             # Disable button `Find`
             self.Button_find.setEnabled(enable)
+        
+        elif group_box == 'line':
+            # Disable line table
+            self.TableWidget_line.setEnabled(enable)
+            # Disable unit
+            self.LineEdit_unit.setEnabled(enable)
 
-        elif group_box == 'fit':
+        elif group_box == 'disp':
             # Disable fit parameters
             self.LineEdit_npieces.setEnabled(enable)
             # self.LineEdit_sig_lower.setEnabled(enable)
@@ -179,6 +198,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             self.RectSwitch.setEnabled(enable)
             # Disable button `Fit`
             self.Button_fit.setEnabled(enable)
+
 
     def setupCell(self, row, column, text='', isChecked=False):
         if column == 'wavelength':
@@ -203,6 +223,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             cell_layout.setContentsMargins(0, 0, 0, 0)
             self.TableWidget_line.setCellWidget(row, 1, cell_widget)
 
+
     def eventFilter(self, source, event):
         if event.type() == QtCore.QEvent.KeyPress:
             if event.matches(QtGui.QKeySequence.Copy):
@@ -221,6 +242,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                 return True
         return super(MainWindow, self).eventFilter(source, event)
 
+
     def copySelection(self):
         index_list = self.TableWidget_line.selectedIndexes()
         if index_list:
@@ -231,6 +253,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                 for index in index_list:
                     copy_text += index.data() + '\r\n'
                 QtWidgets.qApp.clipboard().setText(copy_text)
+
 
     def pasteSelection(self):
         index_list = self.TableWidget_line.selectedIndexes()
@@ -252,6 +275,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                         if row0 + i < self.TableWidget_line.rowCount():
                             self.setupCell(row0 + i, column='wavelength', text=paste_text_list[i])
 
+
     def deleteSelection(self):
         index_list = self.TableWidget_line.selectedIndexes()
         if index_list:
@@ -260,6 +284,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             if index_list:
                 for index in index_list:
                     self.setupCell(index.row(), column='wavelength', text='')
+
 
     def plotSpectrum(self):
 
@@ -275,6 +300,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         ax.set_ylabel('Normalized Count', fontsize=12)
         self.Figure_spectrum.tight_layout(pad=0.2)
         self.FigureCanvas_spectrum.draw()
+
 
     def load(self, external=False):
         """
@@ -337,6 +363,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                 # Clear group box `fit`
                 self.clearFitting()
 
+
     def save(self):
         """
         """
@@ -362,6 +389,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             
             self.statusBar.showMessage(f'Saved to {filename} successfully.', 2000)
 
+
     def about(self):
         text = 'Wavelength Calibrator (ver 0.0.2)\n' +\
                'Developed by Ruining ZHAO\n' +\
@@ -374,6 +402,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         # about_message_box.setInformativeText('More information')
         about_message_box.setWindowTitle('About')
         about_message_box.exec_()
+
 
     def find(self):
         """
@@ -430,7 +459,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         
         nrow_new = self.TableWidget_line.rowCount()
         if nrow_new > 0:
-            self.setEnabled(group_box='fit', enable=True)
+            self.setEnabled(group_box='line', enable=True)
+            self.setEnabled(group_box='disp', enable=True)
         else:
             self.clearFitting()
 
@@ -460,6 +490,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.Figure_spectrum.tight_layout(pad=0.2)
         self.FigureCanvas_spectrum.draw()
 
+
     def clearFitting(self):
         """
         """
@@ -470,11 +501,13 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.Figure_fit.clear()
         self.FigureCanvas_fit.draw()
 
-        # Disable group box `Fit`
-        self.setEnabled(group_box='fit', enable=False)
+        # Disable group box `disp`
+        self.setEnabled(group_box='line', enable=False)
+        self.setEnabled(group_box='disp', enable=False)
 
         # Disable Button `Save`
         self.save_action.setEnabled(False)
+
 
     def fitting(self):
         """
@@ -539,6 +572,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         # Enable Button `Save`
         self.save_action.setEnabled(True)
 
+
     def plotFitting(self):
 
         self.Figure_fit.clear()
@@ -569,10 +603,12 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.Figure_fit.tight_layout(pad=0.2, h_pad=0)
         self.FigureCanvas_fit.draw()
 
+
     def switchPlot(self):
         self.show_residual = self.RectSwitch.isChecked()
         if hasattr(self, 'ax_fit'):
             self.plotFitting()
+
 
 if __name__ == '__main__':
 

@@ -73,8 +73,8 @@ class Ui_MainWindow(object):
         self.GroupBox_peak.setObjectName("GroupBox_peak")
 
         # Horizontal layout 1
-        self.horizontalLayout_1 = QtWidgets.QHBoxLayout(self.GroupBox_peak)
-        self.horizontalLayout_1.setObjectName("horizontalLayout_1")
+        self.HorizontalLayout_1 = QtWidgets.QHBoxLayout(self.GroupBox_peak)
+        self.HorizontalLayout_1.setObjectName("HorizontalLayout_1")
 
         # Vertical layout `spectrum`
         self.VerticalLayout_spectrum = QtWidgets.QVBoxLayout()
@@ -107,7 +107,7 @@ class Ui_MainWindow(object):
         self.VerticalLayout_spectrum.addWidget(self.FigureCanvas_spectrum)
 
         # Add to horizontal layout 1
-        self.horizontalLayout_1.addLayout(self.VerticalLayout_spectrum)
+        self.HorizontalLayout_1.addLayout(self.VerticalLayout_spectrum)
 
         # Vertical layout `peak`
         self.VerticalLayout_peak = QtWidgets.QVBoxLayout()
@@ -358,36 +358,38 @@ class Ui_MainWindow(object):
         # Add to vertical layout `peak`
         self.VerticalLayout_peak.addWidget(self.Button_find)
         
-        # Add to horizontal layout_1
-        self.horizontalLayout_1.addLayout(self.VerticalLayout_peak)
-        self.horizontalLayout_1.setStretch(0, 1)
+        # Add to horizontal layout 1
+        self.HorizontalLayout_1.addLayout(self.VerticalLayout_peak)
+        self.HorizontalLayout_1.setStretch(0, 1)
         
         # Add to the grid layout
         self.gridLayout.addWidget(self.GroupBox_peak, 0, 0, 1, 1)
 
         # Group box `line`
         self.GroupBox_line = QtWidgets.QGroupBox(self.centralwidget)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.MinimumExpanding)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.MinimumExpanding, QtWidgets.QSizePolicy.MinimumExpanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.GroupBox_line.sizePolicy().hasHeightForWidth())
         self.GroupBox_line.setSizePolicy(sizePolicy)
-        self.GroupBox_line.setMinimumSize(QtCore.QSize(230, 100))
+        self.GroupBox_line.setMinimumSize(QtCore.QSize(230, 700))
         self.GroupBox_line.setMaximumSize(QtCore.QSize(230, 16777215))
         self.GroupBox_line.setObjectName("GroupBox_line")
 
-        # Horizontal layout 2
-        self.horizontalLayout_2 = QtWidgets.QHBoxLayout(self.GroupBox_line)
-        self.horizontalLayout_2.setObjectName("horizontalLayout_2")
-        
+        # Vertical layout 2
+        self.VerticalLayout_2 = QtWidgets.QVBoxLayout(self.GroupBox_line)
+        self.VerticalLayout_2.setContentsMargins(5, -1, 5, -1)
+        self.VerticalLayout_2.setSpacing(10)
+        self.VerticalLayout_2.setObjectName("VerticalLayout_2")
+
         # Table widget `line`
         self.TableWidget_line = QtWidgets.QTableWidget(self.GroupBox_line)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.MinimumExpanding)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.MinimumExpanding, QtWidgets.QSizePolicy.MinimumExpanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.TableWidget_line.sizePolicy().hasHeightForWidth())
         self.TableWidget_line.setSizePolicy(sizePolicy)
-        self.TableWidget_line.setMinimumSize(QtCore.QSize(210, 100))
+        self.TableWidget_line.setMinimumSize(QtCore.QSize(210, 600))
         self.TableWidget_line.setMaximumSize(QtCore.QSize(210, 16777215))
         self.TableWidget_line.setObjectName("TableWidget_line")
         self.TableWidget_line.setColumnCount(2)
@@ -409,25 +411,62 @@ class Ui_MainWindow(object):
         self.TableWidget_line.horizontalHeader().setSectionResizeMode(0, QtWidgets.QHeaderView.Stretch)
         self.TableWidget_line.horizontalHeader().setSectionResizeMode(1, QtWidgets.QHeaderView.ResizeToContents)
 
-        # Add to horizontal layout 2
-        self.horizontalLayout_2.addWidget(self.TableWidget_line)
-        
+        # Add to vertical layout 2
+        self.VerticalLayout_2.addWidget(self.TableWidget_line)
+
+        # Form layout `unit`
+        self.FormLayout_unit = QtWidgets.QFormLayout()
+        self.FormLayout_unit.setSizeConstraint(QtWidgets.QLayout.SetFixedSize)
+        self.FormLayout_unit.setFieldGrowthPolicy(QtWidgets.QFormLayout.AllNonFixedFieldsGrow)
+        self.FormLayout_unit.setLabelAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter)
+        self.FormLayout_unit.setFormAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignTop)
+        self.FormLayout_unit.setContentsMargins(2, -1, 0, -1)
+        self.FormLayout_unit.setHorizontalSpacing(10)
+        self.FormLayout_unit.setObjectName("FormLayout_unit")
+
+        # unit label
+        self.Label_unit = QtWidgets.QLabel(self.GroupBox_line)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.Label_unit.sizePolicy().hasHeightForWidth())
+        self.Label_unit.setSizePolicy(sizePolicy)
+        self.Label_unit.setMinimumSize(QtCore.QSize(108, 20))
+        self.Label_unit.setMaximumSize(QtCore.QSize(108, 20))
+        self.Label_unit.setObjectName("Label_unit")
+        self.FormLayout_unit.setWidget(0, QtWidgets.QFormLayout.LabelRole, self.Label_unit)
+        # unit lineedit
+        self.LineEdit_unit = QtWidgets.QLineEdit(self.GroupBox_line)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.LineEdit_unit.sizePolicy().hasHeightForWidth())
+        self.LineEdit_unit.setSizePolicy(sizePolicy)
+        self.LineEdit_unit.setMinimumSize(QtCore.QSize(90, 20))
+        self.LineEdit_unit.setMaximumSize(QtCore.QSize(90, 20))
+        self.LineEdit_unit.setObjectName("LineEdit_unit")
+        self.FormLayout_unit.setWidget(0, QtWidgets.QFormLayout.FieldRole, self.LineEdit_unit)
+
+        # Add to vertical layout 2
+        self.VerticalLayout_2.addLayout(self.FormLayout_unit)
+        self.VerticalLayout_2.setStretch(0, 1)
+
         # Add to the grid layout
         self.gridLayout.addWidget(self.GroupBox_line, 0, 1, 2, 1)
 
-        # Group box `wave`
-        self.GroupBox_wave = QtWidgets.QGroupBox(self.centralwidget)
+        # Group box `disp`
+        self.GroupBox_disp = QtWidgets.QGroupBox(self.centralwidget)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.MinimumExpanding, QtWidgets.QSizePolicy.MinimumExpanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.GroupBox_wave.sizePolicy().hasHeightForWidth())
-        self.GroupBox_wave.setSizePolicy(sizePolicy)
-        self.GroupBox_wave.setMinimumSize(QtCore.QSize(100, 276))
-        self.GroupBox_wave.setObjectName("GroupBox_wave")
+        sizePolicy.setHeightForWidth(self.GroupBox_disp.sizePolicy().hasHeightForWidth())
+        self.GroupBox_disp.setSizePolicy(sizePolicy)
+        self.GroupBox_disp.setMinimumSize(QtCore.QSize(100, 276))
+        self.GroupBox_disp.setObjectName("GroupBox_disp")
         
         # Horizontal layout 3
-        self.horizontalLayout_3 = QtWidgets.QHBoxLayout(self.GroupBox_wave)
-        self.horizontalLayout_3.setObjectName("horizontalLayout_3")
+        self.HorizontalLayout_3 = QtWidgets.QHBoxLayout(self.GroupBox_disp)
+        self.HorizontalLayout_3.setObjectName("HorizontalLayout_3")
 
         # Vertical layout `fit`
         self.VerticalLayout_fit = QtWidgets.QVBoxLayout()
@@ -460,53 +499,53 @@ class Ui_MainWindow(object):
         self.VerticalLayout_fit.addWidget(self.FigureCanvas_fit)
         
         # Add to horizontal layout 3
-        self.horizontalLayout_3.addLayout(self.VerticalLayout_fit)
+        self.HorizontalLayout_3.addLayout(self.VerticalLayout_fit)
 
-        # Vertical layout `wave`
-        self.VerticalLayout_wave = QtWidgets.QVBoxLayout()
-        self.VerticalLayout_wave.setSpacing(5)
-        self.VerticalLayout_wave.setContentsMargins(5, -1, 5, -1)
-        self.VerticalLayout_wave.setObjectName("VerticalLayout_wave")
+        # Vertical layout `disp`
+        self.VerticalLayout_disp = QtWidgets.QVBoxLayout()
+        self.VerticalLayout_disp.setSpacing(5)
+        self.VerticalLayout_disp.setContentsMargins(5, -1, 5, -1)
+        self.VerticalLayout_disp.setObjectName("VerticalLayout_disp")
 
-        # Label `wave`
-        self.Label_wave = QtWidgets.QLabel(self.GroupBox_wave)
+        # Label `disp`
+        self.Label_disp = QtWidgets.QLabel(self.GroupBox_disp)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.Label_wave.sizePolicy().hasHeightForWidth())
-        self.Label_wave.setSizePolicy(sizePolicy)
-        self.Label_wave.setMinimumSize(QtCore.QSize(180, 25))
-        self.Label_wave.setMaximumSize(QtCore.QSize(180, 25))
-        self.Label_wave.setObjectName("Label_wave")
-        # Add to vertical layout `wave`
-        self.VerticalLayout_wave.addWidget(self.Label_wave)
+        sizePolicy.setHeightForWidth(self.Label_disp.sizePolicy().hasHeightForWidth())
+        self.Label_disp.setSizePolicy(sizePolicy)
+        self.Label_disp.setMinimumSize(QtCore.QSize(180, 25))
+        self.Label_disp.setMaximumSize(QtCore.QSize(180, 25))
+        self.Label_disp.setObjectName("Label_disp")
+        # Add to vertical layout `disp`
+        self.VerticalLayout_disp.addWidget(self.Label_disp)
         
-        # Line `wave`
-        self.Line_wave = QtWidgets.QFrame(self.GroupBox_wave)
+        # Line `disp`
+        self.Line_disp = QtWidgets.QFrame(self.GroupBox_disp)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.Line_wave.sizePolicy().hasHeightForWidth())
-        self.Line_wave.setSizePolicy(sizePolicy)
-        self.Line_wave.setMinimumSize(QtCore.QSize(180, 0))
-        self.Line_wave.setMaximumSize(QtCore.QSize(180, 16777215))
-        self.Line_wave.setFrameShape(QtWidgets.QFrame.HLine)
-        self.Line_wave.setFrameShadow(QtWidgets.QFrame.Sunken)
-        self.Line_wave.setObjectName("Line_wave")
-        # Add to vertical layout `wave`
-        self.VerticalLayout_wave.addWidget(self.Line_wave)
+        sizePolicy.setHeightForWidth(self.Line_disp.sizePolicy().hasHeightForWidth())
+        self.Line_disp.setSizePolicy(sizePolicy)
+        self.Line_disp.setMinimumSize(QtCore.QSize(180, 0))
+        self.Line_disp.setMaximumSize(QtCore.QSize(180, 16777215))
+        self.Line_disp.setFrameShape(QtWidgets.QFrame.HLine)
+        self.Line_disp.setFrameShadow(QtWidgets.QFrame.Sunken)
+        self.Line_disp.setObjectName("Line_disp")
+        # Add to vertical layout `disp`
+        self.VerticalLayout_disp.addWidget(self.Line_disp)
 
-        # Form layout `wave`
-        self.FormLayout_wave = QtWidgets.QFormLayout()
-        self.FormLayout_wave.setSizeConstraint(QtWidgets.QLayout.SetFixedSize)
-        self.FormLayout_wave.setFieldGrowthPolicy(QtWidgets.QFormLayout.AllNonFixedFieldsGrow)
-        self.FormLayout_wave.setLabelAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter)
-        self.FormLayout_wave.setFormAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignTop)
-        self.FormLayout_wave.setContentsMargins(0, -1, 0, -1)
-        self.FormLayout_wave.setHorizontalSpacing(17)
-        self.FormLayout_wave.setObjectName("FormLayout_wave")
+        # Form layout `disp`
+        self.FormLayout_disp = QtWidgets.QFormLayout()
+        self.FormLayout_disp.setSizeConstraint(QtWidgets.QLayout.SetFixedSize)
+        self.FormLayout_disp.setFieldGrowthPolicy(QtWidgets.QFormLayout.AllNonFixedFieldsGrow)
+        self.FormLayout_disp.setLabelAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter)
+        self.FormLayout_disp.setFormAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignTop)
+        self.FormLayout_disp.setContentsMargins(0, -1, 0, -1)
+        self.FormLayout_disp.setHorizontalSpacing(17)
+        self.FormLayout_disp.setObjectName("FormLayout_disp")
         # 1.1 npieces label
-        self.Label_npieces = QtWidgets.QLabel(self.GroupBox_wave)
+        self.Label_npieces = QtWidgets.QLabel(self.GroupBox_disp)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -515,9 +554,9 @@ class Ui_MainWindow(object):
         self.Label_npieces.setMinimumSize(QtCore.QSize(90, 20))
         self.Label_npieces.setMaximumSize(QtCore.QSize(90, 20))
         self.Label_npieces.setObjectName("Label_npieces")
-        self.FormLayout_wave.setWidget(0, QtWidgets.QFormLayout.LabelRole, self.Label_npieces)
+        self.FormLayout_disp.setWidget(0, QtWidgets.QFormLayout.LabelRole, self.Label_npieces)
         # 1.1 npieces lineedit
-        self.LineEdit_npieces = QtWidgets.QLineEdit(self.GroupBox_wave)
+        self.LineEdit_npieces = QtWidgets.QLineEdit(self.GroupBox_disp)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -526,9 +565,9 @@ class Ui_MainWindow(object):
         self.LineEdit_npieces.setMinimumSize(QtCore.QSize(73, 20))
         self.LineEdit_npieces.setMaximumSize(QtCore.QSize(73, 20))
         self.LineEdit_npieces.setObjectName("LineEdit_npieces")
-        self.FormLayout_wave.setWidget(0, QtWidgets.QFormLayout.FieldRole, self.LineEdit_npieces)
+        self.FormLayout_disp.setWidget(0, QtWidgets.QFormLayout.FieldRole, self.LineEdit_npieces)
         # # 1.2 sig_lower label
-        # self.Label_sig_lower = QtWidgets.QLabel(self.GroupBox_wave)
+        # self.Label_sig_lower = QtWidgets.QLabel(self.GroupBox_disp)
         # sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         # sizePolicy.setHorizontalStretch(0)
         # sizePolicy.setVerticalStretch(0)
@@ -537,9 +576,9 @@ class Ui_MainWindow(object):
         # self.Label_sig_lower.setMinimumSize(QtCore.QSize(90, 20))
         # self.Label_sig_lower.setMaximumSize(QtCore.QSize(90, 20))
         # self.Label_sig_lower.setObjectName("Label_sig_lower")
-        # self.FormLayout_wave.setWidget(1, QtWidgets.QFormLayout.LabelRole, self.Label_sig_lower)
+        # self.FormLayout_disp.setWidget(1, QtWidgets.QFormLayout.LabelRole, self.Label_sig_lower)
         # # 1.2 sig_lower lineedit
-        # self.LineEdit_sig_lower = QtWidgets.QLineEdit(self.GroupBox_wave)
+        # self.LineEdit_sig_lower = QtWidgets.QLineEdit(self.GroupBox_disp)
         # sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         # sizePolicy.setHorizontalStretch(0)
         # sizePolicy.setVerticalStretch(0)
@@ -548,9 +587,9 @@ class Ui_MainWindow(object):
         # self.LineEdit_sig_lower.setMinimumSize(QtCore.QSize(73, 20))
         # self.LineEdit_sig_lower.setMaximumSize(QtCore.QSize(73, 20))
         # self.LineEdit_sig_lower.setObjectName("LineEdit_sig_lower")
-        # self.FormLayout_wave.setWidget(1, QtWidgets.QFormLayout.FieldRole, self.LineEdit_sig_lower)
+        # self.FormLayout_disp.setWidget(1, QtWidgets.QFormLayout.FieldRole, self.LineEdit_sig_lower)
         # # 1.3 sig_upper label
-        # self.Label_sig_upper = QtWidgets.QLabel(self.GroupBox_wave)
+        # self.Label_sig_upper = QtWidgets.QLabel(self.GroupBox_disp)
         # sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         # sizePolicy.setHorizontalStretch(0)
         # sizePolicy.setVerticalStretch(0)
@@ -559,9 +598,9 @@ class Ui_MainWindow(object):
         # self.Label_sig_upper.setMinimumSize(QtCore.QSize(90, 20))
         # self.Label_sig_upper.setMaximumSize(QtCore.QSize(90, 20))
         # self.Label_sig_upper.setObjectName("Label_sig_upper")
-        # self.FormLayout_wave.setWidget(2, QtWidgets.QFormLayout.LabelRole, self.Label_sig_upper)
+        # self.FormLayout_disp.setWidget(2, QtWidgets.QFormLayout.LabelRole, self.Label_sig_upper)
         # # 1.3 sig_upper lineedit
-        # self.LineEdit_sig_upper = QtWidgets.QLineEdit(self.GroupBox_wave)
+        # self.LineEdit_sig_upper = QtWidgets.QLineEdit(self.GroupBox_disp)
         # sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         # sizePolicy.setHorizontalStretch(0)
         # sizePolicy.setVerticalStretch(0)
@@ -570,9 +609,9 @@ class Ui_MainWindow(object):
         # self.LineEdit_sig_upper.setMinimumSize(QtCore.QSize(73, 20))
         # self.LineEdit_sig_upper.setMaximumSize(QtCore.QSize(73, 20))
         # self.LineEdit_sig_upper.setObjectName("LineEdit_sig_upper")
-        # self.FormLayout_wave.setWidget(2, QtWidgets.QFormLayout.FieldRole, self.LineEdit_sig_upper)
+        # self.FormLayout_disp.setWidget(2, QtWidgets.QFormLayout.FieldRole, self.LineEdit_sig_upper)
         # # 1.4 maxiter label
-        # self.Label_maxiter = QtWidgets.QLabel(self.GroupBox_wave)
+        # self.Label_maxiter = QtWidgets.QLabel(self.GroupBox_disp)
         # sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         # sizePolicy.setHorizontalStretch(0)
         # sizePolicy.setVerticalStretch(0)
@@ -581,9 +620,9 @@ class Ui_MainWindow(object):
         # self.Label_maxiter.setMinimumSize(QtCore.QSize(90, 20))
         # self.Label_maxiter.setMaximumSize(QtCore.QSize(90, 20))
         # self.Label_maxiter.setObjectName("Label_maxiter")
-        # self.FormLayout_wave.setWidget(3, QtWidgets.QFormLayout.LabelRole, self.Label_maxiter)
+        # self.FormLayout_disp.setWidget(3, QtWidgets.QFormLayout.LabelRole, self.Label_maxiter)
         # # 1.4 maxiter lineedit
-        # self.LineEdit_maxiter = QtWidgets.QLineEdit(self.GroupBox_wave)
+        # self.LineEdit_maxiter = QtWidgets.QLineEdit(self.GroupBox_disp)
         # sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         # sizePolicy.setHorizontalStretch(0)
         # sizePolicy.setVerticalStretch(0)
@@ -592,9 +631,9 @@ class Ui_MainWindow(object):
         # self.LineEdit_maxiter.setMinimumSize(QtCore.QSize(73, 20))
         # self.LineEdit_maxiter.setMaximumSize(QtCore.QSize(73, 20))
         # self.LineEdit_maxiter.setObjectName("LineEdit_maxiter")
-        # self.FormLayout_wave.setWidget(3, QtWidgets.QFormLayout.FieldRole, self.LineEdit_maxiter)
+        # self.FormLayout_disp.setWidget(3, QtWidgets.QFormLayout.FieldRole, self.LineEdit_maxiter)
         # 1.5 the switch label
-        self.Label_switch = QtWidgets.QLabel(self.GroupBox_wave)
+        self.Label_switch = QtWidgets.QLabel(self.GroupBox_disp)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -603,9 +642,9 @@ class Ui_MainWindow(object):
         self.Label_switch.setMinimumSize(QtCore.QSize(90, 20))
         self.Label_switch.setMaximumSize(QtCore.QSize(90, 20))
         self.Label_switch.setObjectName("Label_switch")
-        self.FormLayout_wave.setWidget(1, QtWidgets.QFormLayout.LabelRole, self.Label_switch)
+        self.FormLayout_disp.setWidget(1, QtWidgets.QFormLayout.LabelRole, self.Label_switch)
         # 1.5 the switch
-        self.RectSwitch = RectSwitch(self.GroupBox_wave, margin=-9, thumb_width=0.4, duration=150)
+        self.RectSwitch = RectSwitch(self.GroupBox_disp, margin=-9, thumb_width=0.4, duration=150)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -614,13 +653,13 @@ class Ui_MainWindow(object):
         self.RectSwitch.setMinimumSize(QtCore.QSize(73, 20))
         self.RectSwitch.setMaximumSize(QtCore.QSize(73, 20))
         self.RectSwitch.setObjectName("RectSwitch")
-        self.FormLayout_wave.setWidget(1, QtWidgets.QFormLayout.FieldRole, self.RectSwitch)
+        self.FormLayout_disp.setWidget(1, QtWidgets.QFormLayout.FieldRole, self.RectSwitch)
 
-        # Add to vertical layout `wave`
-        self.VerticalLayout_wave.addLayout(self.FormLayout_wave)
+        # Add to vertical layout `disp`
+        self.VerticalLayout_disp.addLayout(self.FormLayout_disp)
         
         # Button `fit`
-        self.Button_fit = QtWidgets.QPushButton(self.GroupBox_wave)
+        self.Button_fit = QtWidgets.QPushButton(self.GroupBox_disp)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -629,15 +668,15 @@ class Ui_MainWindow(object):
         self.Button_fit.setMinimumSize(QtCore.QSize(180, 20))
         self.Button_fit.setMaximumSize(QtCore.QSize(180, 20))
         self.Button_fit.setObjectName("Button_fit")
-        # Add to vertical layout `wave`
-        self.VerticalLayout_wave.addWidget(self.Button_fit)
+        # Add to vertical layout `disp`
+        self.VerticalLayout_disp.addWidget(self.Button_fit)
         
         # Add to horizontal layout 3
-        self.horizontalLayout_3.addLayout(self.VerticalLayout_wave)
-        self.horizontalLayout_3.setStretch(0, 1)
+        self.HorizontalLayout_3.addLayout(self.VerticalLayout_disp)
+        self.HorizontalLayout_3.setStretch(0, 1)
         
         # Add to the grid layout
-        self.gridLayout.addWidget(self.GroupBox_wave, 1, 0, 1, 1)
+        self.gridLayout.addWidget(self.GroupBox_disp, 1, 0, 1, 1)
         self.gridLayout.setRowMinimumHeight(0, 1)
         self.gridLayout.setRowMinimumHeight(1, 1)
         self.gridLayout.setColumnStretch(0, 1)
@@ -672,13 +711,14 @@ class Ui_MainWindow(object):
         self.Button_find.setText(_translate("MainWindow", "Find"))
         
         self.GroupBox_line.setTitle(_translate("MainWindow", "Line Identification"))
+        self.Label_unit.setText(_translate("MainWindow", "<html><head/><body><p><span style=\" font-size:10pt;\">wavelength unit</span></p></body></html>"))
         item = self.TableWidget_line.horizontalHeaderItem(0)
         item.setText(_translate("MainWindow", "WAVELENGTH"))
         item = self.TableWidget_line.horizontalHeaderItem(1)
         item.setText(_translate("MainWindow", "MASK"))
         
-        self.GroupBox_wave.setTitle(_translate("MainWindow", "Wavelength Solution"))
-        self.Label_wave.setText(_translate("MainWindow", "<html><head/><body><p><span style=\" font-size:10pt;\">Fit parameters</span></p></body></html>"))
+        self.GroupBox_disp.setTitle(_translate("MainWindow", "Dispersion Solution"))
+        self.Label_disp.setText(_translate("MainWindow", "<html><head/><body><p><span style=\" font-size:10pt;\">Fit parameters</span></p></body></html>"))
         self.Label_npieces.setText(_translate("MainWindow", "<html><head/><body><p><span style=\" font-size:10pt;\">npieces</span></p></body></html>"))
         # self.Label_sig_lower.setText(_translate("MainWindow", "<html><head/><body><p><span style=\" font-size:10pt;\">sigma_lower</span></p></body></html>"))
         # self.Label_sig_upper.setText(_translate("MainWindow", "<html><head/><body><p><span style=\" font-size:10pt;\">sigma_upper</span></p></body></html>"))
