@@ -11,20 +11,19 @@ from astropy.table import Table
 # Matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.transforms as transforms
+# specutils
+from specutils import Spectrum1D
 # drpsy
+from drpsy import __version__ as version_drpsy
 from drpsy.onedspec.center import refinePeaks
 from drpsy.modeling import Spline1D
 
 # __init__
 from __init__ import __version__ as version
-# UI
-from ui_mainwindow import Ui_MainWindow
-# fonts
-from fonts import table_font
-# widgets
-from widgets import CheckBoxFileDialog
-# io
-from io import loadSpectrum, saveSpectrum
+# ui
+from ui import Ui_MainWindow, CheckBoxFileDialog, table_font
+# utils
+from utils import _plotSpectrum, loadSpectrum, saveSpectrum
 
 # Set plot parameters
 plt.rcParams['axes.linewidth'] = 1
@@ -324,33 +323,41 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                 for index in index_list:
                     self.setupCell(index.row(), column='wavelength', text='')
 
-    # todo: dynamic xlabel and ylabel
+
     def plotSpectrum(self):
+        """Plot spectrum.
+
+        Input: ``self.index``, ``self.count``, ``self.unit_count``
+        Output: None
+        """
 
         if not self.isNewOpen:
             self.Figure_spectrum.clear()
 
+        xlabel = 'spectral axis [pixel]'
+        ylabel = 'flux'
+        if self.unit_count.to_string():
+            ylabel += f' [{self.unit_count.to_string()}]'
+
         ax = self.Figure_spectrum.add_subplot(111)
-        ax.step(self.index, self.count, 'k-', lw=0.8, where='mid')
-        ax.tick_params(
-            which='major', direction='in', top=True, right=True, length=5, width=1, 
-            labelsize=12)
-        ax.tick_params(
-            which='minor', direction='in', top=True, right=True, length=3, width=1, 
-            labelsize=12)
-        ax.set_xlim(self.index.min(), self.index.max())
-        ax.set_ylim(-0.05, 1.15)
-        ax.set_xlabel('spectral axis', fontsize=12)
-        ax.set_ylabel('flux', fontsize=12)
+        _plotSpectrum(
+            ax=ax, x=self.index, y=self.count, xlim=(self.index.min(), self.index.max()), 
+            ylim=(-0.05, 1.15), xlabel=xlabel, ylabel=ylabel)
         self.Figure_spectrum.tight_layout(pad=0.2)
         self.FigureCanvas_spectrum.draw()
 
 
     def load(self, external=False):
-        """
-        self.index
-        self.count
-        self.peak_lib
+        """Load spectrum.
+
+        Input: ``self.file_name``, ``self.file_format`` and ``self.reverse`` (from here 
+        or from command line)
+        Output: ``self.index``, ``self.count`` ``self.unit_count``, ``self.header`` and ``self.peak_lib``
+
+        Parameters
+        ----------
+        external : bool
+            If `True`, a file name is provided in command line.
         """
 
         isAccepted = False
@@ -358,18 +365,20 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         if not external:
 
             file_dialog = CheckBoxFileDialog(check_box_text='reverse')
+
             file_dialog.setNameFilters(
                 ['ASCII Files (*.*)', 'Enhanced CSV Files (*.ecsv)', 'FITS (*.fits *.fit *.FITS *.FIT)'])
-            if self.filename is not None:
-                file_dialog.selectFile(self.filename)
 
-            if self.fileformat == 'ascii':
+            if self.file_name is not None:
+                file_dialog.selectFile(self.file_name)
+
+            if self.file_format == 'ascii':
                 file_dialog.selectNameFilter('ASCII Files (*.*)')
 
-            elif self.fileformat == 'ecsv':
+            elif self.file_format == 'ecsv':
                 file_dialog.selectNameFilter('Enhanced CSV Files (*.ecsv)')
 
-            elif self.fileformat == 'fits':
+            elif self.file_format == 'fits':
                 file_dialog.selectNameFilter('FITS (*.fits *.fit *.FITS *.FIT)')
 
             if self.reverse is not None:
@@ -379,38 +388,43 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                 
                 isAccepted = True
 
-                # ``filename``
-                self.filename = file_dialog.selectedUrls()[0].toLocalFile()
-                # ``fileformat``
-                extension = os.path.splitext(self.filename)[1]
+                # ``file_name``
+                self.file_name = file_dialog.selectedUrls()[0].toLocalFile()
+
+                # ``file_format``
+                extension = os.path.splitext(self.file_name)[1]
                 if file_dialog.selectedNameFilter().startswith('Enhanced'):
-                    self.fileformat = 'ecsv'
+                    self.file_format = 'ecsv'
 
                 elif file_dialog.selectedNameFilter().startswith('FITS'):
-                    self.fileformat = 'fits'
+                    self.file_format = 'fits'
 
                 else:
-                    self.fileformat = 'ascii'
+                    self.file_format = 'ascii'
 
                 # ``reverse``
                 self.reverse = file_dialog.check_box.checkState() == QtCore.Qt.Checked
 
         if external | isAccepted:
 
-            # try:
-            self.index, self.count = loadSpectrum(self.filename, self.fileformat, self.reverse)
-            # except:
+            self.index, self.count, self.unit_count, self.header = loadSpectrum(
+                file_name=self.file_name, file_format=self.file_format, 
+                reverse=self.reverse)
+
             self.peak_lib = dict()
 
             # Plot
             self.plotSpectrum()
+
             if self.isNewOpen:
+
                 # Enable group box `peak`
                 self.setEnabled(group_box='peak', enable=True)
                 # Set flag `isNewOpen`
                 self.isNewOpen = False
 
             else:
+
                 # Initialize the table
                 self.TableWidget_line.setRowCount(0)
                 # Clear group box `fit`
@@ -418,56 +432,67 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
 
     def save(self):
-        """Save calibrated spectrum"""
+        """Save calibrated spectrum
+
+        Input: ``self.spectrum``, ``self.peak_table``
+        Output: None
+        """
 
         file_dialog = CheckBoxFileDialog(check_box_text='Enhanced CSV Files (*.ecsv)')
         file_dialog.setAcceptMode(QtWidgets.QFileDialog.AcceptSave)
         file_dialog.setNameFilters(['FITS (*.fits *.fit *.FITS *.FIT)'])
-        file_dialog.selectFile(os.path.splitext(self.filename)[0])
+        file_dialog.selectFile(os.path.splitext(self.file_name)[0])
 
         if file_dialog.exec_() == QtWidgets.QDialog.Accepted:
-            # ``filename``
-            filename = file_dialog.selectedUrls()[0].toLocalFile()
-            extension = os.path.splitext(filename)[1]
+
+            # ``file_name``
+            file_name = file_dialog.selectedUrls()[0].toLocalFile()
+            extension = os.path.splitext(file_name)[1]
+
             if extension not in ['.fits', '.fit', '.FITS', '.FIT']:
-                filename += '.fits'
+                file_name += '.fits'
+
             # also save as Enhanced CSV Files (*.ecsv) or not
             saveECSV = file_dialog.check_box.checkState() == QtCore.Qt.Checked
 
             saveSpectrum(
-                spectrum=self.spectrum, peak_prop=self.peak_prop, header=self.header, 
-                filename=filename, saveECSV=saveECSV)
+                file_name=file_name, spectrum=self.spectrum, peak_table=self.peak_table, 
+                saveECSV=saveECSV)
             
-            self.statusBar.showMessage(f'Saved to {filename} successfully.', 2000)
+            self.statusBar.showMessage(f'Saved to {file_name} successfully.', 2000)
 
     # todo: add urls
     def about(self):
 
         text = (
-            f'Wavelength Calibrator (ver {version})\n' +\
-            'Developed by Ruining ZHAO\n' +\
-            '12/22/2021\n' +\
+            f'Version: {version}\n' +\
+            'Developer: Ruining ZHAO\n' +\
+            f'Date: 2022-12-03\n' +\
+            f'drpsy: version {version_drpsy}\n' +\
+            'todo-list:\n' + \
             '1) Bugs to be fixed.\n' +\
             '2) Exceptions to be caught.'
         )
         about_message_box = QtWidgets.QMessageBox()
         about_message_box.setIcon(QtWidgets.QMessageBox.Information)
-        about_message_box.setText(text)
-        # about_message_box.setInformativeText('More information')
+        about_message_box.setText('Wavelength Calibrator')
+        about_message_box.setInformativeText(text)
         about_message_box.setWindowTitle('About')
         about_message_box.exec_()
 
     # todo: dynamic xlabel and ylabel
     def find(self):
-        """
-        self.peaks
-        self.properties
+        """Find peaks.
+
+        Input: ``self.peak_lib``, ``self.count``
+        Output: ``self.peaks``, ``self.properties``, ``self.peak_lib``
         """
     
-        nrow_old = self.TableWidget_line.rowCount()
+        n_row_old = self.TableWidget_line.rowCount()
         # Get old contents
-        if nrow_old > 0:
-            for i in range(nrow_old):
+        if n_row_old > 0:
+
+            for i in range(n_row_old):
                 self.peak_lib[int(self.peaks[i])] = (
                     self.TableWidget_line.item(i, 0).text(),
                     self.TableWidget_line.cellWidget(i, 1).checkState()
@@ -500,57 +525,60 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         self.TableWidget_line.setRowCount(len(self.peaks))
         peak_lib_keys = self.peak_lib.keys()
+
         for i, peak in enumerate(self.peaks):
+
             if int(peak) in peak_lib_keys:
                 text, isChecked = self.peak_lib[int(peak)]
                 # Column `WAVELENGTH`
                 self.setupCell(row=i, column='wavelength', text=text)
                 # Column `MASK`
                 self.setupCell(row=i, column='mask', isChecked=isChecked)
+
             else:
                 # Column `WAVELENGTH`
                 self.setupCell(row=i, column='wavelength', text='')
                 # Column `MASK`
                 self.setupCell(row=i, column='mask', isChecked=False)
+
             # Row height
-            self.TableWidget_line.verticalHeader().setSectionResizeMode(i, QtWidgets.QHeaderView.ResizeToContents)
+            self.TableWidget_line.verticalHeader().setSectionResizeMode(
+                i, QtWidgets.QHeaderView.ResizeToContents)
         
-        nrow_new = self.TableWidget_line.rowCount()
-        if nrow_new > 0:
+        n_row_new = self.TableWidget_line.rowCount()
+
+        if n_row_new > 0:
             self.setEnabled(group_box='line', enable=True)
             self.setEnabled(group_box='disp', enable=True)
+
         else:
             self.clearFitting()
 
         # Plot
+        xlabel = 'spectral axis [pixel]'
+        ylabel = 'flux'
+        if self.unit_count.to_string():
+            ylabel += f' [{self.unit_count.to_string()}]'
+
         self.Figure_spectrum.clear()
         ax = self.Figure_spectrum.add_subplot(111)
         trans = transforms.blended_transform_factory(
             ax.transData, ax.transAxes)
-        ax.step(self.index, self.count, 'k-', lw=0.8, where='mid')
         for i, peak in enumerate(self.peaks):
             ax.plot([peak, peak], [0.0, 0.87], 'r--', transform=trans, lw=0.8)
             ax.plot([peak, peak], [0.94, 1.0], 'r--', transform=trans, lw=0.8)
             ax.annotate(
                 f'{i + 1:d}', xy=(peak, 0.9), xycoords=trans, ha='center', va='center', 
                 fontsize=12, color='r', annotation_clip=True)
-        ax.tick_params(
-            which='major', direction='in', top=True, right=True, length=5, width=1, 
-            labelsize=12)
-        ax.tick_params(
-            which='minor', direction='in', top=True, right=True, length=3, width=1, 
-            labelsize=12)
-        ax.set_xlim(self.index.min(), self.index.max())
-        ax.set_ylim(-0.05, 1.15)
-        ax.set_xlabel('spectral axis', fontsize=12)
-        ax.set_ylabel('flux', fontsize=12)
+        _plotSpectrum(
+            ax=ax, x=self.index, y=self.count, xlim=(self.index.min(), self.index.max()), 
+            ylim=(-0.05, 1.15), xlabel=xlabel, ylabel=ylabel)
         self.Figure_spectrum.tight_layout(pad=0.2)
         self.FigureCanvas_spectrum.draw()
 
 
     def clearFitting(self):
-        """
-        """
+        """Clear fitting plot."""
         
         # Clear plot
         if hasattr(self, 'ax_fit'):
@@ -566,31 +594,31 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         # Disable Button `Save`
         self.save_action.setEnabled(False)
 
-    # Fitting raise
+
     def fitting(self):
         """
-        self.wave
-        self.mask
-        self.wave_peaks
-        self.wave_index
-        self.residual
-        self.rms
-        self.spectrum
-        self.peak_prop
+        Input: ``self.index``, ``self.wave``, ``self.mask``, ``self.wave_peaks``
+        
+        Output: ``self.spectrum``, ``self.peak_table``, ``self.show_residual``
+
+        Raise
+        -----
+        1) unit error
+        2) fitting error
         """
 
         # Get fit parameters
-        self.npieces = int(self.LineEdit_npieces.text())
+        n_piece = int(self.LineEdit_npieces.text())
 
         if not hasattr(self, 'show_residual'):
             self.show_residual = self.RectSwitch.isChecked()
         
         # Get labelled lines
-        nrow = self.TableWidget_line.rowCount()
-        self.wave_input = np.zeros(nrow)
-        self.mask_input = np.zeros(nrow, dtype=bool)
+        n_row = self.TableWidget_line.rowCount()
+        self.wave_input = np.zeros(n_row)
+        self.mask_input = np.zeros(n_row, dtype=bool)
 
-        for i in range(nrow):
+        for i in range(n_row):
 
             try:
                 w = float(self.TableWidget_line.item(i, 0).text())
@@ -606,74 +634,107 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         # Fit cubic spline function
         spl, self.residual, _, _, _ = Spline1D(
             x=self.peaks, y=self.wave_input, weight=None, mask=self.mask_input, 
-            order=3, n_piece=self.npieces, n_iter=0, sigma_lower=None, 
+            order=3, n_piece=n_piece, n_iter=0, sigma_lower=None, 
             sigma_upper=None, grow=False, use_relative=False)
 
-        self.wave_peaks = spl(self.peaks)
-        self.wave_index = spl(self.index)
+        wavelength = spl(self.index)
 
-        self.rms = np.sqrt((self.residual**2).sum() / (~self.mask_input).sum())
+        self.rms = round(
+            np.sqrt((self.residual[~self.mask_input]**2).sum() / (~self.mask_input).sum()), 3)
 
         # Plot
         self.plotFitting()
-        
-        # Compile
-        self.header = {
-            'PEAKUSED': ((~self.mask_input).sum(), 'number of peaks used'),
-            'PEAKDETE': (self.wave_input.shape[0], 'number of peaks detected'),
-            'PIECE': (self.npieces, 'number of cubic spline pieces'),
-            'RMS': (round(self.rms, 3), 'root mean squared of fitting'),
+
+        unit_wavelength = u.Unit(self.LineEdit_unit.text())
+
+        self.spectrum = Spectrum1D(
+            spectral_axis=(wavelength * unit_wavelength), 
+            flux=(self.count * self.unit_count), 
+            meta={'header': self.header})
+
+        meta_peak = {
+            'EXTNAME': ('peak', 'name of the extension'), 
+            'PEAKUSED': ((~self.mask_input).sum(), 'number of peaks used'), 
+            'PEAKDETE': (self.wave_input.shape[0], 'number of peaks detected'), 
+            'PIECE': (n_piece, 'number of cubic spline pieces'), 
+            'RMS': (self.rms, 'root mean squared of fitting'), 
         }
-        self.spectrum = Table(data=[self.wave_index * u.AA, u.Quantity(self.count)], 
-                              names=('spectral_axis', 'flux'))
-        self.peak_prop = Table(data=[self.peaks[~self.mask_input] * u.pixel,
-                                     u.Quantity(self.properties['peak_heights'][~self.mask_input]), 
-                                     self.properties['left_bases'][~self.mask_input] * u.pixel, 
-                                     self.properties['right_bases'][~self.mask_input] * u.pixel, 
-                                     self.wave_input[~self.mask_input] * u.AA], 
-                               names=('peaks', 'heights', 'left_bases', 'right_bases', 'spectral_axis'))
+
+        self.peak_table = Table(
+            data=[self.peaks[~self.mask_input] * u.pixel, 
+                  self.properties['peak_heights'][~self.mask_input] * self.unit_count, 
+                  self.properties['left_bases'][~self.mask_input] * u.pixel, 
+                  self.properties['right_bases'][~self.mask_input] * u.pixel, 
+                  self.wave_input[~self.mask_input] * unit_wavelength], 
+            names=('peaks', 'heights', 'left_bases', 'right_bases', 'spectral_axis'), 
+            meta=meta_peak}
+        )
 
         # Enable Button `Save`
         self.save_action.setEnabled(True)
 
-    # todo: dynamic xlabel and ylabel
+
     def plotFitting(self):
+        """self.wave_index -> self.spectrum.spectral_axis
+
+        Input: ``self.show_residual``, ``self.wave_input``, ``self.peaks``, 
+        ``self.mask_input``, ``self.spectrum``, ``self.residual``, ``self.rms``
+        Output: None
+        """
+
+        xlabel = 'spectral axis'
+        ylabel = 'residuals'
+        if self.spectrum.spectral_axis.unit.to_string():
+            xlabel += f' [{self.spectrum.spectral_axis.unit.to_string()}]'
+            ylabel += f' [{self.spectrum.spectral_axis.unit.to_string()}]'
 
         self.Figure_fit.clear()
         self.ax_fit = self.Figure_fit.add_subplot(111)
+
         if not self.show_residual:
+
             self.ax_fit.plot(
                 self.wave_input[self.mask_input], self.peaks[self.mask_input], 'x', 
                 c='grey', ms=8)
             self.ax_fit.plot(
                 self.wave_input[~self.mask_input], self.peaks[~self.mask_input], 'x', 
                 c='red', ms=8)
-            self.ax_fit.plot(self.wave_index, self.index, 'k-', lw=0.8)
-            self.ax_fit.set_ylabel('Pixel Index', fontsize=12)
-        else:
             self.ax_fit.plot(
-                self.wave_peaks[~self.mask_input], self.residual, 'x', c='red', ms=8)
+                self.spectrum.spectral_axis.value, self.index, 'k-', lw=0.8)
+            self.ax_fit.set_ylabel('dispersion axis [pixel]', fontsize=12)
+
+        else:
+
+            self.ax_fit.plot(
+                self.wave_input[~self.mask_input], self.residual[~self.mask_input], 
+                'x', c='red', ms=8)
             self.ax_fit.axhline(y=0, ls='--', color='k', lw=0.8)
+
             for i, peak in enumerate(self.peaks):
+
                 if self.mask_input[i]:
                     self.ax_fit.annotate(
-                        f'{i + 1:d}', (self.wave_peaks[i], 0), xycoords='data', 
+                        f'{i + 1:d}', (self.wave_input[i], 0), xycoords='data', 
                         ha='center', va='center', fontsize=12, color='grey')
+
                 else:
                     self.ax_fit.annotate(
-                        f'{i + 1:d}', (self.wave_peaks[i], 0), xycoords='data', 
+                        f'{i + 1:d}', (self.wave_input[i], 0), xycoords='data', 
                         ha='center', va='center', fontsize=12, color='r')
-            self.ax_fit.set_ylabel('Residuals', fontsize=12)
+
+            self.ax_fit.set_ylabel(ylabel, fontsize=12)
+
         self.ax_fit.tick_params(
             which='major', direction='in', top=True, right=True, length=5, width=1.5, 
             labelsize=12)
         self.ax_fit.tick_params(
             which='minor', direction='in', top=True, right=True, length=3, width=1.5, 
             labelsize=12)
-        self.ax_fit.set_xlim(self.wave_index.min(), self.wave_index.max())
-        self.ax_fit.set_xlabel('Wavelength', fontsize=12)
+        self.ax_fit.set_xlim(
+            self.spectrum.spectral_axis.value.min(), self.spectrum.spectral_axis.value.max())
+        self.ax_fit.set_xlabel(xlabel, fontsize=12)
         self.ax_fit.annotate(
-            '$N=' + f'{(~self.mask_input).sum()}/{self.wave_input.shape[0]}$, ' + '$\\rm{RMS}=' + f'{self.rms:.3f}$',
+            f'$N={(~self.mask_input).sum()}/{self.wave_input.shape[0]}' + '$, $\\rm{RMS}=' + f'{self.rms}$',
             xy=(0.98, 0.1), xycoords='axes fraction', ha='right', fontsize=12)
         self.Figure_fit.tight_layout(pad=0.2, h_pad=0)
         self.FigureCanvas_fit.draw()
@@ -710,18 +771,18 @@ if __name__ == '__main__':
 
     # Assignment
     args = parser.parse_args()
-    main_window.filename = args.name
-    main_window.fileformat = args.format
+    main_window.file_name = args.name
+    main_window.file_format = args.format
     main_window.reverse = args.reverse
 
     # warnings.filterwarnings('error')
 
     # Load spectrum if ``name`` and ``format`` is provided
-    if main_window.filename is not None:
+    if main_window.file_name is not None:
 
-        main_window.filename = os.path.abspath(main_window.filename)
+        main_window.file_name = os.path.abspath(main_window.file_name)
 
-        if main_window.fileformat is not None:
+        if main_window.file_format is not None:
 
             main_window.load(external=True)
 

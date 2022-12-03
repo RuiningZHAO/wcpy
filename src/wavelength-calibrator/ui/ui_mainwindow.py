@@ -18,10 +18,11 @@ else:
         FigureCanvas, NavigationToolbar2QT as NavigationToolbar)
 import matplotlib.pyplot as plt
 
-# fonts
-from fonts import table_font
 # switch
-from widgets import RectSwitch
+from .widgets import RectSwitch
+# fonts
+from .fonts import table_font
+
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
