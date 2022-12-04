@@ -26,5 +26,5 @@ where = ["src"]  # list of folders that contain the packages (["."] by default)
 include = ["*"]  # package names should match these glob patterns (["*"] by default)
 
 [tool.setuptools.dynamic]
-version = {attr = "drpsy.__version__"}
+version = {attr = "wavelength-calibrator.__version__"}
 dependencies = {file = "requirements.txt"}

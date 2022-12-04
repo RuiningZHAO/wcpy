@@ -8,7 +8,7 @@ from astropy.io import ascii, fits
 from astropy.time import Time
 from astropy.table import Table
 # drpsy
-from drpsy.onedspec import _Spectrum1D_to_hdu, loadSpectrum1D
+from drpsy.onedspec.io import _Spectrum1D_to_hdu, loadSpectrum1D
 
 from __init__ import __version__ as version
 

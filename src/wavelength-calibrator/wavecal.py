@@ -667,7 +667,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                   self.properties['right_bases'][~self.mask_input] * u.pixel, 
                   self.wave_input[~self.mask_input] * unit_wavelength], 
             names=('peaks', 'heights', 'left_bases', 'right_bases', 'spectral_axis'), 
-            meta=meta_peak}
+            meta=meta_peak,
         )
 
         # Enable Button `Save`
