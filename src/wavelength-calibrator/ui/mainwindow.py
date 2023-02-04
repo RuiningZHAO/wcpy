@@ -6,20 +6,13 @@
 #
 # WARNING! All changes made in this file will be lost!
 
-# PySide6
-from PySide6 import QtCore, QtGui, QtWidgets
+# PyQt5
+from PyQt5 import QtCore, QtGui, QtWidgets
 # matplotlib
-# from matplotlib.backends.qt_compat import QtWidgets
-# from matplotlib.backends.backend_qtagg import (
-#     FigureCanvas, NavigationToolbar2QT as NavigationToolbar)
-# from matplotlib.backends.qt_compat import QtCore, QtWidgets, is_pyqt5
-# if is_pyqt5():
-#     from matplotlib.backends.backend_qt5agg import (
-#         FigureCanvasQTAgg as FigureCanvas, NavigationToolbar2QT as NavigationToolbar)
-# else:
-#     from matplotlib.backends.backend_qt4agg import (
-#         FigureCanvas, NavigationToolbar2QT as NavigationToolbar)
-# import matplotlib.pyplot as plt
+from matplotlib.backends.qt_compat import QtWidgets
+from matplotlib.backends.backend_qtagg import (
+    FigureCanvas, NavigationToolbar2QT as NavigationToolbar)
+import matplotlib.pyplot as plt
 
 # switch
 from .widgets import RectSwitch
@@ -29,15 +22,16 @@ from .fonts import table_font
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
-        # The main window
-        MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(1000, 800)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.MinimumExpanding, QtWidgets.QSizePolicy.MinimumExpanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(MainWindow.sizePolicy().hasHeightForWidth())
+        # sizePolicy.setHeightForWidth(MainWindow.sizePolicy().hasHeightForWidth())
+
+        # The main window
+        MainWindow.resize(1200, 800)
         MainWindow.setSizePolicy(sizePolicy)
         MainWindow.setMinimumSize(QtCore.QSize(1200, 800))
+        MainWindow.setObjectName("MainWindow")
 
         # The menu bar (Added by RNZ 11/06/2021)
         self.menu_bar = MainWindow.menuBar()
@@ -67,11 +61,11 @@ class Ui_MainWindow(object):
         self.gridLayout.setObjectName("gridLayout")
         
         # Group box `peak`
-        self.GroupBox_peak = QtWidgets.QGroupBox(self.centralwidget)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.MinimumExpanding, QtWidgets.QSizePolicy.MinimumExpanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.GroupBox_peak.sizePolicy().hasHeightForWidth())
+        # sizePolicy.setHeightForWidth(self.GroupBox_peak.sizePolicy().hasHeightForWidth())
+        self.GroupBox_peak = QtWidgets.QGroupBox(self.centralwidget)
         self.GroupBox_peak.setSizePolicy(sizePolicy)
         self.GroupBox_peak.setMinimumSize(QtCore.QSize(100, 276))
         self.GroupBox_peak.setObjectName("GroupBox_peak")

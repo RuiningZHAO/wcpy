@@ -1,5 +1,5 @@
-# PySide6
-from PySide6 import QtGui
+# PyQt5
+from PyQt5 import QtGui
 
 # Table font
 table_font = QtGui.QFont()

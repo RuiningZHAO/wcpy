@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
+from copy import deepcopy
 
 # NumPy
 import numpy as np
@@ -61,35 +62,45 @@ def loadSpectrum(file_name, file_format, reverse):
     """
 
     # Load
-    if file_format == 'ascii':
-        tbl = ascii.read(file_name, guess=True, data_start=0)
+    if file_format == 'fits':
+        tbl = loadSpectrum1D(file_name, hdu='spec')
 
-    elif file_format == 'ecsv':
-        tbl = Table.read(file_name, format=('ascii.' + file_format))
+        length = tbl.data.shape[-1]
 
-    elif file_format == 'fits':
-        tbl = loadSpectrum1D(file_name, ext='spec')
+        # Count
+        count = tbl.data.flatten()[:length]
+
+        # Unit of count
+        unit_count = tbl.unit
+
+    else:
+        if file_format == 'ascii':
+            tbl = ascii.read(file_name, guess=True, data_start=0)
+        
+        elif file_format == 'ecsv':
+            tbl = Table.read(file_name, format='ascii.ecsv')
+        
+        length = len(tbl)
+
+        # Count
+        # Assume that flux is the second column for multi-column case.
+        if len(tbl.colnames) > 1:
+            colname = tbl.colnames[1]
+        # Use the only column
+        else:
+            colname = tbl.colnames[0]
+        count = tbl[colname].data
+
+        # Unit of count
+        if tbl[colname].unit is not None:
+            unit_count = tbl[colname].unit
+        # Default unit (use config in the future?)
+        else:
+            unit_count = u.Unit('')
 
     # Index
-    index = np.arange(len(tbl))
-
-    # Count
-    # Assume that flux is the second column for multi-column case.
-    if len(tbl.colnames) > 1:
-        colname = tbl.colnames[1]
-    # Use the only column
-    else:
-        colname = tbl.colnames[0]
-
-    count = tbl[colname].data
-
-    # Unit of count
-    if tbl[colname].unit is not None:
-        unit_count = tbl[colname].unit
-    # Default unit (use config in the future?)
-    else:
-        unit_count = u.Unit('')
-
+    index = np.arange(length)
+    
     # Mask bad pixels
     mask = np.isfinite(count)
     if mask.any():
@@ -107,7 +118,7 @@ def loadSpectrum(file_name, file_format, reverse):
         header = tbl.meta['header']
 
     else:
-        header = dict()
+        header = fits.Header(tbl.meta)
 
     return index, count, unit_count, header
 
@@ -135,7 +146,8 @@ def saveSpectrum(file_name, spectrum, peak_table, saveECSV):
     #     f'Wavelength Calibrator (version {version})', 'file generator')
     # header['DATE'] = (
     #     f'{Time.now().to_value("iso", subfmt="date_hm")}', 'date file was generated')
-
+    
+    
     hdu_spec = _Spectrum1D_to_hdu(spectrum, spectrum.meta['header'])
     
     hdu_spec.header['ORIGIN'] = (

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
-# PySide6
-from PySide6 import QtCore, QtGui, QtWidgets
+# PyQt5
+from PyQt5 import QtCore, QtGui, QtWidgets
+
 
 class CheckBoxFileDialog(QtWidgets.QFileDialog):
     def __init__(self, check_box_text):
@@ -9,6 +10,7 @@ class CheckBoxFileDialog(QtWidgets.QFileDialog):
         self.check_box = QtWidgets.QCheckBox(text=check_box_text)
         # Beautify
         self.layout().addWidget(self.check_box)
+
 
 class RectSwitch(QtWidgets.QAbstractButton):
     def __init__(self, parent=None, margin=2, thumb_width=0.6, duration=150):
@@ -20,6 +22,7 @@ class RectSwitch(QtWidgets.QAbstractButton):
         self.setColor()
         self.setCheckable(True)
         self.setFixedSize(self.sizeHint())
+
 
     def setColor(self):
         palette = self.palette()
@@ -41,13 +44,15 @@ class RectSwitch(QtWidgets.QAbstractButton):
             False: 'off',
         }
         self._text_color = {
-            True: QtCore.Qt.black,                # QColor
+            True: QtCore.Qt.black,             # QColor
             False: palette.mid().color()       # QColor
         }
         self._text_opacity = 1
 
+
     def sizeHint(self):
         return QtCore.QSize(80, 20)
+
 
     def setGeometry(self):
         self._track_width = min(self.width(), self.width() + 2 * self._margin)
@@ -65,23 +70,28 @@ class RectSwitch(QtWidgets.QAbstractButton):
         }
         self._offset = self._base_offset
 
+
     def resizeEvent(self, event):
         super().resizeEvent(event)
         self.setGeometry()
         self.offset = self._end_offset[self.isChecked()]()
 
-    @QtCore.pyqtProperty(int)
+
+    @QtCore.Property(int)
     def offset(self):
         return self._offset
+
 
     @offset.setter
     def offset(self, value):
         self._offset = value
         self.update()
 
+
     # def setChecked(self, checked):
     #     super().setChecked(checked)
     #     self.offset = self._end_offset[checked]()
+
 
     def paintEvent(self, event):
         light_border_color = self._light_border_color
@@ -143,6 +153,7 @@ class RectSwitch(QtWidgets.QAbstractButton):
             self._text[self.isChecked()],
         )
 
+
     def mouseReleaseEvent(self, event):
         super().mouseReleaseEvent(event)
         if event.button() == QtCore.Qt.LeftButton:
@@ -152,9 +163,11 @@ class RectSwitch(QtWidgets.QAbstractButton):
             anim.setEndValue(self._end_offset[self.isChecked()]())
             anim.start()
 
+
     def enterEvent(self, event):
         self.setCursor(QtCore.Qt.PointingHandCursor)
         super().enterEvent(event)
+
 
 if __name__ == '__main__':
 

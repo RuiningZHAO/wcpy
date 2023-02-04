@@ -1,13 +1,15 @@
 # -*- coding: utf-8 -*-
 import os, sys, argparse, warnings
 
-# PySide6
-from PySide6 import QtCore, QtGui, QtWidgets
+# PyQt5
+from PyQt5 import QtCore, QtGui, QtWidgets
 # NumPy
 import numpy as np
+# SciPy
+from scipy.signal import find_peaks
 # matplotlib
-# import matplotlib.pyplot as plt
-# import matplotlib.transforms as transforms
+import matplotlib.pyplot as plt
+import matplotlib.transforms as transforms
 # AstroPy
 import astropy.units as u
 from astropy.table import Table
@@ -18,11 +20,8 @@ from drpsy import __version__ as version_drpsy
 from drpsy.onedspec.center import refinePeaks
 from drpsy.modeling import Spline1D
 
-# __init__
 from __init__ import __version__ as version
-# ui
 from ui import Ui_MainWindow, CheckBoxFileDialog, table_font
-# utils
 from utils import _plotSpectrum, loadSpectrum, saveSpectrum
 
 # Set plot parameters
@@ -367,7 +366,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             file_dialog = CheckBoxFileDialog(check_box_text='reverse')
 
             file_dialog.setNameFilters(
-                ['ASCII Files (*.*)', 'Enhanced CSV Files (*.ecsv)', 'FITS (*.fits *.fit *.FITS *.FIT)'])
+                ['FITS (*.fits *.fit *.FITS *.FIT)', 'Enhanced CSV Files (*.ecsv)', 'ASCII Files (*.*)'])
 
             if self.file_name is not None:
                 file_dialog.selectFile(self.file_name)
@@ -642,15 +641,15 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.rms = round(
             np.sqrt((self.residual[~self.mask_input]**2).sum() / (~self.mask_input).sum()), 3)
 
-        # Plot
-        self.plotFitting()
-
         unit_wavelength = u.Unit(self.LineEdit_unit.text())
 
         self.spectrum = Spectrum1D(
             spectral_axis=(wavelength * unit_wavelength), 
             flux=(self.count * self.unit_count), 
             meta={'header': self.header})
+        
+        # Plot
+        self.plotFitting()
 
         meta_peak = {
             'EXTNAME': ('peak', 'name of the extension'), 
