@@ -1,16 +1,16 @@
 # -*- coding: utf-8 -*-
 import os, sys, argparse, warnings
 
-# PyQt5
-from PyQt5 import QtCore, QtGui, QtWidgets
+# PySide6
+from PySide6 import QtCore, QtGui, QtWidgets
 # NumPy
 import numpy as np
+# matplotlib
+# import matplotlib.pyplot as plt
+# import matplotlib.transforms as transforms
 # AstroPy
 import astropy.units as u
 from astropy.table import Table
-# Matplotlib
-import matplotlib.pyplot as plt
-import matplotlib.transforms as transforms
 # specutils
 from specutils import Spectrum1D
 # drpsy
@@ -753,13 +753,19 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
 
     parser.add_argument(
-        '-n', '--name', default=None, help='Name of the input file')
+        '-n', '--name', default=None, 
+        help='Name of the input file'
+    )
 
     parser.add_argument(
-        '-f', '--format', default=None, help='Format of the input file (`ascii`, `ecsv`, or `fits`).')
+        '-f', '--format', default=None, 
+        help='Format of the input file (`ascii`, `ecsv`, or `fits`).'
+    )
 
     parser.add_argument(
-        '-r', '--reverse', action='store_true', default=False, help='Reverse or not')
+        '-r', '--reverse', action='store_true', default=False, 
+        help='Reverse or not.'
+    )
 
     # UI
     app = QtWidgets.QApplication([])
@@ -769,7 +775,7 @@ if __name__ == '__main__':
     # Show
     main_window.show()
 
-    # Assignment
+    # Parse
     args = parser.parse_args()
     main_window.file_name = args.name
     main_window.file_format = args.format

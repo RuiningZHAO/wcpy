@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-# PyQt5
-from PyQt5 import QtCore, QtGui, QtWidgets
+# PySide6
+from PySide6 import QtCore, QtGui, QtWidgets
 
 class CheckBoxFileDialog(QtWidgets.QFileDialog):
     def __init__(self, check_box_text):
