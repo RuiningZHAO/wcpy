@@ -1,7 +1,7 @@
 Metadata-Version: 2.1
 Name: wavelength-calibrator
-Version: 0.0.3
-Summary: A UI to facilitate wavelength calibration.
+Version: 0.0.6.3
+Summary: A UI for wavelength calibration.
 Author-email: Ruining ZHAO <ruiningzhao@mail.bnu.edu.cn>
 Project-URL: Homepage, https://github.com/RuiningZHAO/wavelength-calibrator
 Project-URL: Tracker, https://github.com/RuiningZHAO/wavelength-calibrator/issues

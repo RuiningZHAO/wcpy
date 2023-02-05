@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "wavelength-calibrator"
-description = "A UI to facilitate wavelength calibration."
+description = "A UI for wavelength calibration."
 readme = {file = "README.md", content-type = "text/markdown"}
 authors = [
   {name = "Ruining ZHAO", email = "ruiningzhao@mail.bnu.edu.cn"}, 
@@ -17,6 +17,10 @@ classifiers = [
 ]
 dynamic = ["version", "dependencies"]
 
+[project.scripts]
+wcpy = "wcpy.command_line:main"
+wavelength-calibrator = "wcpy.command_line:main"
+
 [project.urls]
 "Homepage" = "https://github.com/RuiningZHAO/wavelength-calibrator"
 "Tracker" = "https://github.com/RuiningZHAO/wavelength-calibrator/issues"
@@ -26,5 +30,5 @@ where = ["src"]  # list of folders that contain the packages (["."] by default)
 include = ["*"]  # package names should match these glob patterns (["*"] by default)
 
 [tool.setuptools.dynamic]
-version = {attr = "wavelength-calibrator.__version__"}
+version = {attr = "wcpy.__version__"}
 dependencies = {file = "requirements.txt"}

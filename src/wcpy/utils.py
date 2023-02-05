@@ -12,7 +12,7 @@ from astropy.table import Table
 # drpsy
 from drpsy.onedspec.io import _Spectrum1D_to_hdu, loadSpectrum1D
 
-from __init__ import __version__ as version
+from .__init__ import __version__ as version
 
 
 def _plotSpectrum(ax, x, y, xlim, ylim, xlabel, ylabel):
@@ -31,6 +31,7 @@ def _plotSpectrum(ax, x, y, xlim, ylim, xlabel, ylabel):
     ax.set_ylabel(ylabel, fontsize=12)
 
     return ax
+
 
 def loadSpectrum(file_name, file_format, reverse):
     """Load uncalibrated spectrum.

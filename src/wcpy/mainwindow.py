@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import os, sys, argparse, warnings
+import os
 
 # PyQt5
 from PyQt5 import QtCore, QtGui, QtWidgets
@@ -20,9 +20,9 @@ from drpsy import __version__ as version_drpsy
 from drpsy.onedspec.center import refinePeaks
 from drpsy.modeling import Spline1D
 
-from __init__ import __version__ as version
-from ui import Ui_MainWindow, CheckBoxFileDialog, table_font
-from utils import _plotSpectrum, loadSpectrum, saveSpectrum
+from .__init__ import __version__ as version
+from .ui import Ui_MainWindow, CheckBoxFileDialog, table_font
+from .utils import _plotSpectrum, loadSpectrum, saveSpectrum
 
 # Set plot parameters
 plt.rcParams['axes.linewidth'] = 1
@@ -745,50 +745,3 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         if hasattr(self, 'ax_fit'):
             self.plotFitting()
-
-
-if __name__ == '__main__':
-
-    parser = argparse.ArgumentParser()
-
-    parser.add_argument(
-        '-n', '--name', default=None, 
-        help='Name of the input file'
-    )
-
-    parser.add_argument(
-        '-f', '--format', default=None, 
-        help='Format of the input file (`ascii`, `ecsv`, or `fits`).'
-    )
-
-    parser.add_argument(
-        '-r', '--reverse', action='store_true', default=False, 
-        help='Reverse or not.'
-    )
-
-    # UI
-    app = QtWidgets.QApplication([])
-    app.setStyle('Windows')
-    # Setup
-    main_window = MainWindow()
-    # Show
-    main_window.show()
-
-    # Parse
-    args = parser.parse_args()
-    main_window.file_name = args.name
-    main_window.file_format = args.format
-    main_window.reverse = args.reverse
-
-    # warnings.filterwarnings('error')
-
-    # Load spectrum if ``name`` and ``format`` is provided
-    if main_window.file_name is not None:
-
-        main_window.file_name = os.path.abspath(main_window.file_name)
-
-        if main_window.file_format is not None:
-
-            main_window.load(external=True)
-
-    sys.exit(app.exec_())
