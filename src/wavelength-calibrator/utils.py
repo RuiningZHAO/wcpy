@@ -63,7 +63,7 @@ def loadSpectrum(file_name, file_format, reverse):
 
     # Load
     if file_format == 'fits':
-        tbl = loadSpectrum1D(file_name, hdu='spec')
+        tbl = loadSpectrum1D(file_name, ext='spec')
 
         length = tbl.data.shape[-1]
 
