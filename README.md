@@ -1,2 +1,2 @@
 # wavelength-calibrator
-A UI to facilitate wavelength calibration.
+A UI for wavelength calibration.
