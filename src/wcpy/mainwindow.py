@@ -15,10 +15,10 @@ import astropy.units as u
 from astropy.table import Table
 # specutils
 from specutils import Spectrum1D
-# drpsy
-from drpsy import __version__ as version_drpsy
-from drpsy.onedspec.center import refinePeaks
-from drpsy.modeling import Spline1D
+# drpy
+from drpy import __version__ as version_drpy
+from drpy.onedspec.center import refinePeaks
+from drpy.modeling import Spline1D
 
 from .__init__ import __version__ as version
 from .ui import Ui_MainWindow, CheckBoxFileDialog, table_font
@@ -467,7 +467,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             f'Version: {version}\n' +\
             'Developer: Ruining ZHAO\n' +\
             f'Date: 2022-12-03\n' +\
-            f'drpsy: version {version_drpsy}\n' +\
+            f'drpy: version {version_drpy}\n' +\
             'todo-list:\n' + \
             '1) Bugs to be fixed.\n' +\
             '2) Exceptions to be caught.'

@@ -1,8 +1,12 @@
-# wavelength-calibrator
+# wcpy
 A UI for wavelength calibration.
 
 ## Installation
-`pip install wavelength-calibrator`
+
+```
+pip install astro-wcpy
+```
 
 ## Usage
-Type `wavelength-calibrator` or `wcpy` in command line.
+
+Type `wavelength-calibrator` in command line.

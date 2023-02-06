@@ -9,8 +9,8 @@ import astropy.units as u
 from astropy.io import ascii, fits
 from astropy.time import Time
 from astropy.table import Table
-# drpsy
-from drpsy.onedspec.io import _Spectrum1D_to_hdu, loadSpectrum1D
+# drpy
+from drpy.onedspec.io import _Spectrum1D_to_hdu, loadSpectrum1D
 
 from .__init__ import __version__ as version
 
@@ -142,17 +142,10 @@ def saveSpectrum(file_name, spectrum, peak_table, saveECSV):
         If `True`, two .ecsv files containing the calibrated spectrum and the peak 
         properties are saved along with the .fits file.
     """
-
-    # header['ORIGIN'] = (
-    #     f'Wavelength Calibrator (version {version})', 'file generator')
-    # header['DATE'] = (
-    #     f'{Time.now().to_value("iso", subfmt="date_hm")}', 'date file was generated')
-    
     
     hdu_spec = _Spectrum1D_to_hdu(spectrum, spectrum.meta['header'])
     
-    hdu_spec.header['ORIGIN'] = (
-        f'Wavelength Calibrator (version {version})', 'file generator')
+    hdu_spec.header['ORIGIN'] = (f'wcpy (version {version})', 'file generator')
     hdu_spec.header['DATE'] = (
         f'{Time.now().to_value("iso", subfmt="date_hm")}', 'date file was generated')
 

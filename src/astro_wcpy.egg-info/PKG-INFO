@@ -1,10 +1,10 @@
 Metadata-Version: 2.1
-Name: wavelength-calibrator
-Version: 0.0.6.3
+Name: astro-wcpy
+Version: 0.0.1.0
 Summary: A UI for wavelength calibration.
 Author-email: Ruining ZHAO <ruiningzhao@mail.bnu.edu.cn>
-Project-URL: Homepage, https://github.com/RuiningZHAO/wavelength-calibrator
-Project-URL: Tracker, https://github.com/RuiningZHAO/wavelength-calibrator/issues
+Project-URL: Homepage, https://github.com/RuiningZHAO/wcpy
+Project-URL: Tracker, https://github.com/RuiningZHAO/wcpy/issues
 Classifier: Programming Language :: Python :: 3
 Classifier: License :: OSI Approved :: GNU General Public License v3 (GPLv3)
 Classifier: Operating System :: OS Independent
@@ -12,5 +12,15 @@ Requires-Python: >=3.7.3
 Description-Content-Type: text/markdown
 License-File: LICENSE
 
-# wavelength-calibrator
-A UI to facilitate wavelength calibration.
+# wcpy
+A UI for wavelength calibration.
+
+## Installation
+
+```
+pip install astro-wcpy
+```
+
+## Usage
+
+Type `wavelength-calibrator` in command line.
