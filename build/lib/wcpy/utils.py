@@ -15,7 +15,7 @@ from drpy.onedspec.io import _Spectrum1D_to_hdu, loadSpectrum1D
 from .__init__ import __version__ as version
 
 
-def _plotSpectrum(ax, x, y, xlim, ylim, xlabel, ylabel):
+def plotSpectrum(ax, x, y, xlim, ylim, xlabel, ylabel):
     """Plot spectrum."""
 
     ax.step(x, y, 'k-', lw=0.8, where='mid')
@@ -33,13 +33,44 @@ def _plotSpectrum(ax, x, y, xlim, ylim, xlabel, ylabel):
     return ax
 
 
-def loadSpectrum(file_name, file_format, reverse):
+def loadLineList(path_to_line_list):
+    """Load line list.
+    
+    Parameters
+    ----------
+    path_to_line_list : str
+        Path to line list.
+    
+    Returns
+    -------
+    
+    """
+
+    with open(path_to_line_list, 'r') as f:
+
+        # Get rid of empty lines and comments starting with #
+        lines = [line.strip() for line in f.read().replace('#', '\n#').split('\n')]
+        lines = [line for line in lines if (~line.startswith('#')) & (line != '')]
+
+        line_list = [line.split()[0] for line in lines]
+
+    # Check if all lines are numeric
+    for line in line_list:
+        try:
+            float(line)
+        except:
+            raise ValueError('There are non-numeric lines in the line list.')
+
+    return line_list
+
+
+def loadSpectrum(path_to_file, file_format, reverse):
     """Load uncalibrated spectrum.
 
     Parameters
     ----------
-    file_name : str
-        File name.
+    path_to_file : str
+        Path to file.
 
     file_format : str
         File format.
@@ -64,7 +95,7 @@ def loadSpectrum(file_name, file_format, reverse):
 
     # Load
     if file_format == 'fits':
-        tbl = loadSpectrum1D(file_name, ext='spec')
+        tbl = loadSpectrum1D(path_to_file, ext='spec')
 
         length = tbl.data.shape[-1]
 
@@ -76,10 +107,10 @@ def loadSpectrum(file_name, file_format, reverse):
 
     else:
         if file_format == 'ascii':
-            tbl = ascii.read(file_name, guess=True, data_start=0)
+            tbl = ascii.read(path_to_file, guess=True, data_start=0)
         
         elif file_format == 'ecsv':
-            tbl = Table.read(file_name, format='ascii.ecsv')
+            tbl = Table.read(path_to_file, format='ascii.ecsv')
         
         length = len(tbl)
 
@@ -124,23 +155,16 @@ def loadSpectrum(file_name, file_format, reverse):
     return index, count, unit_count, header
 
 
-def saveSpectrum(file_name, spectrum, peak_table, saveECSV):
+def saveSpectrum(path_to_file, spectrum):
     """Save calibrated spectrum.
 
     Parameters
     ----------
-    file_name : str
-        File name.
+    path_to_file : str
+        Path to file.
 
     spectrum : `~astropy.table.table.Table`
         Calibrated spectrum to be saved.
-
-    peak_table : `~astropy.table.table.Table`
-        Properties of the peaks used to derive dispersion solution.
-
-    saveECSV : bool
-        If `True`, two .ecsv files containing the calibrated spectrum and the peak 
-        properties are saved along with the .fits file.
     """
     
     hdu_spec = _Spectrum1D_to_hdu(spectrum, spectrum.meta['header'])
@@ -156,12 +180,27 @@ def saveSpectrum(file_name, spectrum, peak_table, saveECSV):
 
     hdu_list = fits.HDUList([fits.PrimaryHDU(), hdu_spec, hdu_peak])
 
-    hdu_list.writeto(file_name, overwrite=True)
+    hdu_list.writeto(path_to_file, overwrite=True)
 
     if saveECSV:
         Table.read(hdu_spec).write(
-            os.path.splitext(file_name)[0] + '_spec.ecsv', format='ascii.ecsv', 
+            os.path.splitext(path_to_file)[0] + '_spec.ecsv', format='ascii.ecsv', 
             overwrite=True)
         peak_table.write(
-            os.path.splitext(file_name)[0] + '_peak.ecsv', format='ascii.ecsv', 
+            os.path.splitext(path_to_file)[0] + '_peak.ecsv', format='ascii.ecsv', 
             overwrite=True)
+
+
+def savePeakTable(path_to_file, peak_table):
+    """Save peak information.
+
+    Parameters
+    ----------
+    path_to_file : str
+        Path to file.
+
+    peak_table : `~astropy.table.table.Table`
+        Properties of the peaks used to derive dispersion solution.
+    """
+
+    pass

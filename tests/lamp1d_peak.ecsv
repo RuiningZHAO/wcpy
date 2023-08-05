@@ -1,0 +1,21 @@
+# %ECSV 1.0
+# ---
+# datatype:
+# - {name: peaks, unit: pix, datatype: float64}
+# - {name: heights, unit: adu, datatype: float64}
+# - {name: left_bases, unit: pix, datatype: float64}
+# - {name: right_bases, unit: pix, datatype: float64}
+# - {name: spectral_axis, unit: Angstrom, datatype: float64}
+# meta: !!omap
+# - EXTNAME: !!python/tuple [peak, name of the extension]
+# - PEAKUSED: !!python/tuple [2, number of peaks used]
+# - PEAKDETE: !!python/tuple [17, number of peaks detected]
+# - RMS: !!python/tuple [0.0, root mean squared of fitting]
+# - METHOD: !!python/tuple [poly, fitting method]
+# - DEGREE: !!python/tuple [1, parameter of fitting method]
+# - ORIGIN: !!python/tuple [wcpy (ver 0.0.2.0), file generator]
+# - DATE: !!python/tuple ['2023-08-05 18:31', date file was generated]
+# schema: astropy-2.0
+peaks heights left_bases right_bases spectral_axis
+247.7301659859346 0.10326263256620576 237.0 256.0 4567.0
+1766.699216972514 0.10861649808206318 1758.0 1778.0 6789.0

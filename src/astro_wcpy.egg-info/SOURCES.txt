@@ -10,9 +10,9 @@ src/astro_wcpy.egg-info/entry_points.txt
 src/astro_wcpy.egg-info/requires.txt
 src/astro_wcpy.egg-info/top_level.txt
 src/wcpy/__init__.py
-src/wcpy/command_line.py
-src/wcpy/mainwindow.py
-src/wcpy/utils.py
+src/wcpy/core.py
+src/wcpy/io.py
+src/wcpy/script.py
 src/wcpy/ui/__init__.py
 src/wcpy/ui/fonts.py
 src/wcpy/ui/mainwindow.py

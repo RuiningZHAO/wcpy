@@ -18,7 +18,7 @@ classifiers = [
 dynamic = ["version", "dependencies"]
 
 [project.scripts]
-wavelength-calibrator = "wcpy.command_line:main"
+wavelength-calibrator = "wcpy.script:run"
 
 [project.urls]
 "Homepage" = "https://github.com/RuiningZHAO/wcpy"

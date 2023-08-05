@@ -1,2 +1,2 @@
 [console_scripts]
-wavelength-calibrator = wcpy.command_line:main
+wavelength-calibrator = wcpy.script:run
