@@ -189,8 +189,8 @@ def saveSpectrum(path_to_file, file_format, spectrum):
         spectrum.write(path_to_file, format='ascii.ecsv', overwrite=True)
 
 
-def savePeakTable(path_to_file, file_format, peak_table):
-    """Save peak information.
+def exportPeakTable(path_to_file, file_format, peak_table):
+    """Export peak information.
 
     Parameters
     ----------

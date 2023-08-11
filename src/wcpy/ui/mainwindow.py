@@ -53,27 +53,30 @@ class Ui_MainWindow(object):
         self.menuBar.setObjectName("menuBar")
         self.menuBar.setNativeMenuBar(False)
 
-        self.fileMenu = self.menuBar.addMenu("&File")
         self.openAction = QtWidgets.QAction("Open File...", MainWindow)
         self.openAction.setObjectName("open")
         self.openAction.setShortcut("Ctrl+O")
         self.openAction.setIcon(
             self.style().standardIcon(QtWidgets.QStyle.SP_DialogOpenButton))
+
         self.saveAction = QtWidgets.QAction("Save As...", MainWindow)
         self.saveAction.setObjectName("save")
         self.saveAction.setShortcut("Ctrl+S")
         self.saveAction.setIcon(
             self.style().standardIcon(QtWidgets.QStyle.SP_DialogSaveButton))
-        self.savePeakAction = QtWidgets.QAction("Save Peak Info...", MainWindow)
-        self.savePeakAction.setObjectName("savePeak")
-        self.savePeakAction.setIcon(
-            self.style().standardIcon(QtWidgets.QStyle.SP_DialogSaveButton))
+
+        self.exportPeakAction = QtWidgets.QAction("Peak Table", MainWindow)
+        self.exportPeakAction.setObjectName("exportPeak")
+
         self.exitAction = QtWidgets.QAction("Exit", MainWindow)
         self.exitAction.setShortcut("Ctrl+Q")
+
+        self.fileMenu = self.menuBar.addMenu("&File")
         self.fileMenu.addAction(self.openAction)
         self.fileMenu.addSeparator()
         self.fileMenu.addAction(self.saveAction)
-        self.fileMenu.addAction(self.savePeakAction)
+        self.exportMenu = self.fileMenu.addMenu("Export...")
+        self.exportMenu.addAction(self.exportPeakAction)
         self.fileMenu.addSeparator()
         self.fileMenu.addAction(self.exitAction)
 

@@ -20,7 +20,7 @@ from drpy.modeling import Poly1D, Spline1D
 
 from .__init__ import __version__
 from .ui import Ui_MainWindow, InformationBox, CheckBoxFileDialog, tableFont
-from .io import loadLineList, loadSpectrum, saveSpectrum, savePeakTable
+from .io import loadLineList, loadSpectrum, saveSpectrum, exportPeakTable
 
 # Set plot parameters
 plt.rcParams['axes.linewidth'] = 1
@@ -76,8 +76,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         # Disable `saveAction`
         self.saveAction.setEnabled(False)
-        # Disable `savePeakAction`
-        self.savePeakAction.setEnabled(False)
+        # Disable `exportMenu`
+        self.exportMenu.setEnabled(False)
         # Disable group box `peak`
         self.setEnabled(group='peak', enable=False)
         # Disable group box `line`
@@ -464,8 +464,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
 
     @QtCore.pyqtSlot()
-    def on_savePeak_triggered(self):
-        """Save peak information.
+    def on_exportPeak_triggered(self):
+        """Export peak information.
 
         Save ``self.peak_table`` to file.
         """
@@ -500,7 +500,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                 if extension not in ['.ecsv', '.ECSV']:
                     self.path_to_peak += '.ecsv'
 
-            savePeakTable(
+            exportPeakTable(
                 path_to_file=self.path_to_peak, file_format=file_format, 
                 peak_table=self.peak_table)
             
@@ -962,7 +962,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         # Enable save actions
         self.saveAction.setEnabled(True)
-        self.savePeakAction.setEnabled(True)
+        self.exportMenu.setEnabled(True)
 
 
     @QtCore.pyqtSlot()
@@ -1018,7 +1018,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         # Disable save actions
         self.saveAction.setEnabled(False)
-        self.savePeakAction.setEnabled(False)
+        self.exportMenu.setEnabled(False)
 
 
     def _loadSpectrum(self):
